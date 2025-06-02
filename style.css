@@ -1,0 +1,48 @@
+/* 기본 스타일 */
+#arduinoContainer {
+    display: none;
+    position: absolute;
+    background: #FFF;
+    z-index: 999;
+}
+
+.card {
+    border: 1px solid #ccc;
+    padding: 15px;
+    margin: 10px;
+}
+
+.arduino-header {
+    margin-bottom: 10px;
+}
+
+.pins {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.pin {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.switch {
+    display: inline-block;
+}
+
+#overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    z-index: 10000;
+}

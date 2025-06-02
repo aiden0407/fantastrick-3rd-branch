@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Signal Simulator (Normal + Broken)</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+        }
+
+        section {
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+
+        section h2 {
+            margin-top: 0;
+        }
+
+        .pin-toggle {
+            margin: 5px 0;
+        }
+
+        button {
+            width: 80px;
+        }
+
+        #log {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            height: 200px;
+            overflow-y: auto;
+            background: #f9f9f9;
+            font-family: monospace;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Signal Simulator</h1>
+
+    <!-- ATM-Normal -->
+    <section>
+        <h2>ATM-Normal (ATMmega-1) Read 핀</h2>
+        <div class="pin-toggle">Pin 22: <button id="n22">OFF</button></div>
+        <div class="pin-toggle">Pin 23: <button id="n23">OFF</button></div>
+        <div class="pin-toggle">Pin 24: <button id="n24">OFF</button></div>
+        <div class="pin-toggle">Pin 25: <button id="n25">OFF</button></div>
+        <div class="pin-toggle">Pin 26: <button id="n26">OFF</button></div>
+        <div class="pin-toggle">Pin 27: <button id="n27">OFF</button></div>
+        <div class="pin-toggle">Pin 28: <button id="n28">OFF</button></div>
+    </section>
+
+    <!-- ATM-Broken -->
+    <section>
+        <h2>ATM-Broken (ATMuno-1) Read 핀</h2>
+        <div class="pin-toggle">Pin 12: <button id="b12">OFF</button></div>
+        <div class="pin-toggle">Pin 11: <button id="b11">OFF</button></div>
+        <div class="pin-toggle">Pin 10: <button id="b10">OFF</button></div>
+        <div class="pin-toggle">Pin 9: <button id="b9">OFF</button></div>
+        <div class="pin-toggle">Pin 8: <button id="b8">OFF</button></div>
+        <div class="pin-toggle">Pin 7: <button id="b7">OFF</button></div>
+    </section>
+
+    <div id="log">▶ 로그가 여기에 표시됩니다.</div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 50px;">
+        <a href="./atm/normal.html" target="_blank">정상 ATM</a>
+        <a href="./atm/broken.html" target="_blank">고장난 ATM</a>
+    </div>
+
+    <script>
+        const channel = new BroadcastChannel('arduino_channel');
+        // 두 기기 별 상태 저장
+        const stateNormal = { 22: 'off', 23: 'off', 24: 'off', 25: 'off', 26: 'off', 27: 'off', 28: 'off' };
+        const stateBroken = { 12: 'off', 11: 'off', 10: 'off', 9: 'off', 8: 'off', 7: 'off' };
+        const logEl = document.getElementById('log');
+
+        function log(txt) {
+            const d = document.createElement('div');
+            d.textContent = txt;
+            logEl.appendChild(d);
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        function sendUpdate() {
+            // Normal pins
+            const pinsN = Object.entries(stateNormal).map(([pin, st]) => ({
+                pin: Number(pin), mode: 'read', state: st
+            }));
+            // Broken pins
+            const pinsB = Object.entries(stateBroken).map(([pin, st]) => ({
+                pin: Number(pin), mode: 'read', state: st
+            }));
+            const msg = {
+                type: 'slaveUpdate',
+                arduinos: [
+                    { arduinoID: 'ATMmega-1', arduinoNickname: 'NormalSim', pins: pinsN },
+                    { arduinoID: 'ATMuno-1', arduinoNickname: 'BrokenSim', pins: pinsB }
+                ]
+            };
+            channel.postMessage(msg);
+            log('→ 전송: ' + JSON.stringify(msg.arduinos, null, 2));
+        }
+
+        function bindButtons(prefix, stateObj, pins) {
+            pins.forEach(pin => {
+                const btn = document.getElementById(prefix + pin);
+                btn.addEventListener('click', () => {
+                    stateObj[pin] = stateObj[pin] === 'on' ? 'off' : 'on';
+                    btn.textContent = stateObj[pin].toUpperCase();
+                    sendUpdate();
+                });
+            });
+        }
+
+        // ATM-Normal: ids n22, n23, …, n28
+        bindButtons('n', stateNormal, [22, 23, 24, 25, 26, 27, 28]);
+        // ATM-Broken: ids b12, b10, …, b7
+        bindButtons('b', stateBroken, [12, 11, 10, 9, 8, 7]);
+
+        // Front 로부터 오는 제어 메시지 로깅
+        channel.onmessage = ev => {
+            const d = ev.data;
+            if ((d.arduinoID === 'ATMmega-1' || d.arduinoID === 'ATMuno-1') && d.command) {
+                log(`← 제어: [${d.arduinoID}] pin ${d.pin} → ${d.command}`);
+            }
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            sendUpdate();
+            log('● Simulator 시작');
+        });
+    </script>
+</body>
+
+</html>
