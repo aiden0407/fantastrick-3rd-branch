@@ -1,0 +1,76 @@
+.play-area {
+    position: relative;
+    display: flex;
+    width: 71.6%;
+    gap: 40px;
+}
+
+.play-area .reel-container {
+    user-select: none;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    aspect-ratio: 100/101;
+    overflow: hidden;
+    align-items: center;
+    width: 33.3333%;
+}
+
+.play-area .reel-container .reel-item {
+    font-size: 140px;
+    animation-duration: .1s;
+    animation-name: slidein
+}
+
+.play-area .reel-container .reel-item.deactivate {
+    animation-duration: .1s;
+    animation-name: slideOut;
+    animation-fill-mode: forwards
+}
+
+.play-area:before {
+    position: absolute;
+    content: "";
+    width: 0;
+    height: 0;
+    top: calc(50% - 8px);
+    border-top: 10px solid rgba(0, 0, 0, 0);
+    border-bottom: 10px solid rgba(0, 0, 0, 0)
+}
+
+.play-area:after {
+    position: absolute;
+    content: "";
+    width: 0;
+    height: 0;
+    right: 0;
+    top: calc(50% - 8px);
+    border-top: 10px solid rgba(0, 0, 0, 0);
+    border-bottom: 10px solid rgba(0, 0, 0, 0)
+}
+
+@keyframes slidein {
+    from {
+        font-size: 60px;
+        opacity: 0
+    }
+
+    to {
+        font-size: 140px;
+        opacity: 1
+    }
+}
+
+@keyframes slideOut {
+    to {
+        height: 0;
+        font-size: 60px;
+        opacity: 0
+    }
+
+    from {
+        height: 140px;
+        font-size: 140px;
+        opacity: 1
+    }
+}

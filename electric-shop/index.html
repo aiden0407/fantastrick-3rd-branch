@@ -7,6 +7,8 @@
   <script src="../jquery.min.js" type='text/javascript'></script>
   <!-- 공통 arduinoContainer CSS 부분 -->
   <link rel="stylesheet" href="../style.css" />
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./jackpot.css" />
 </head>
 
 <body>
@@ -20,11 +22,393 @@
     정상적인 초기화를 위해 화면을 터치해 주세요
   </div>
 
-  <script>
+  <div id="section1" style="width:100%; height:100dvh; display: none; justify-content: center; align-items: center; ">
+    <p class="blinking" style="color: #F6A934; font-size: 100px;">POWER OFF</p>
+  </div>
 
+  <div id="section2">
+    <img id="bg-img2" src="./img/pass_screen.png" alt="pass_screen" />
+    <div id="lock-container">
+      <div class="digit-box" data-type="letter">
+        <img class="arrow-up" src="./img/arrow_up.png" alt="arrow_up" />
+        <span class="value">A</span>
+        <img class="arrow-down" src="./img/arrow_down.png" alt="arrow_down" />
+      </div>
+      <div class="digit-box" data-type="letter">
+        <img class="arrow-up" src="./img/arrow_up.png" alt="arrow_up" />
+        <span class="value">A</span>
+        <img class="arrow-down" src="./img/arrow_down.png" alt="arrow_down" />
+      </div>
+      <div class="digit-box" data-type="number">
+        <img class="arrow-up" src="./img/arrow_up.png" alt="arrow_up" />
+        <span class="value">0</span>
+        <img class="arrow-down" src="./img/arrow_down.png" alt="arrow_down" />
+      </div>
+      <div class="digit-box" data-type="letter">
+        <img class="arrow-up" src="./img/arrow_up.png" alt="arrow_up" />
+        <span class="value">A</span>
+        <img class="arrow-down" src="./img/arrow_down.png" alt="arrow_down" />
+      </div>
+    </div>
+
+    <div id="section2-popup">
+      <div class="popup-content">
+        <img src="./img/popup_background.png" alt="popup_background" />
+        <p class="popup-text">
+          모듈이 선택되었습니다.<br />
+          제작단계로 넘어갑니다.
+        </p>
+        <div class="popup-buttons">
+          <img id="yes-btn" src="./img/YES_button.png" alt="YES_button" />
+          <img id="no-btn" src="./img/NO_button.png" alt="NO_button" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="section3">
+    <img id="bg-img3" src="./img/slot_screen2.png" alt="slot_screen" />
+    <span id="redCount"
+      style="position: absolute; width: 63px; text-align: center; bottom: 40px; left: 26%; color: #F6A934; font-size: 100px;">0</span>
+    <span id="blueCount"
+      style="position: absolute; width: 63px; text-align: center; bottom: 40px; left: 55.5%; color: #F6A934; font-size: 100px;">0</span>
+    <span id="yellowCount"
+      style="position: absolute; width: 63px; text-align: center; bottom: 40px; right: 10%; color: #F6A934; font-size: 100px;">0</span>
+    <div class="play-area">
+      <div class="reel-container"></div>
+      <div class="reel-container"></div>
+      <div class="reel-container"></div>
+    </div>
+
+    <div id="count-error-popup">
+      <div class="popup-content">
+        <img src="./img/popup_background.png" alt="popup_background" />
+        <p class="popup-text">
+          재료가 부족합니다. <br />
+          재료를 더 투입해 주시기 바랍니다.
+        </p>
+        <div class="popup-buttons">
+          <img id="count-error-btn" src="./img/OK_button.png" alt="OK_button" />
+        </div>
+      </div>
+    </div>
+
+    <div id="section3-normal-popup">
+      <div class="popup-content">
+        <img src="./img/popup_background.png" alt="popup_background" />
+        <p class="popup-text">
+          일반 등급 모듈이 선택되었습니다. <br />
+          해당 모듈을 제작 하시겠습니까?
+        </p>
+        <div class="popup-buttons">
+          <img id="normal-yes-btn" src="./img/YES_button.png" alt="YES_button" />
+          <img id="normal-no-btn" src="./img/NO_button.png" alt="NO_button" />
+        </div>
+      </div>
+    </div>
+
+    <div id="section3-rare-popup">
+      <div class="popup-content">
+        <img src="./img/popup_background.png" alt="popup_background" />
+        <p class="popup-text">
+          고급 등급 모듈이 선택되었습니다. <br />
+          해당 모듈을 제작 하시겠습니까?
+        </p>
+        <div class="popup-buttons">
+          <img id="rare-yes-btn" src="./img/YES_button.png" alt="YES_button" />
+          <img id="rare-no-btn" src="./img/NO_button.png" alt="NO_button" />
+        </div>
+      </div>
+    </div>
+
+    <div id="section3-rare-last-popup">
+      <div class="popup-content">
+        <img src="./img/popup_background.png" alt="popup_background" />
+        <p class="popup-text">
+          고급 등급 모듈이 선택되었습니다. <br />
+          해당 모듈을 제작 하시겠습니까?
+        </p>
+        <div class="popup-buttons">
+          <img id="rare-ok-btn" src="./img/OK_button.png" alt="OK_button" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="section4">
+    <img id="bg-img4" src="./img/final_screen.png" alt="final_screen" />
+    <p id="final-text"
+      style="font-size: 200px; color: #F6A934; position: absolute; margin: 40px 0 0 0; text-align: center;">
+      제작중
+    </p>
+  </div>
+
+  <script>
+    let pin22Activated = false;
+    let pin23Activated = false;
+    let pin363738Activated = false;
+    let pin41Activated = false;
+    let codeCleared = false;
+
+    let pin24Activated = false;
+    let pin25Activated = false;
+    let pin26Activated = false;
+    let pin27Activated = false;
+    let pin28Activated = false;
+    let pin29Activated = false;
+    let pin30Activated = false;
+    let pin31Activated = false;
+    let pin32Activated = false;
+    let pin33Activated = false;
+    let pin34Activated = false;
+    let pin35Activated = false;
+    let redCount = 0;
+    let blueCount = 0;
+    let yellowCount = 0;
+    let isErrorPopupOpen = false;
 
     const pinActions = {
       "SLOTmega-2_pin_22": () => {
+        if (!pin22Activated) {
+          pin22Activated = true;
+          section1.style.display = "flex";
+        }
+      },
+      "SLOTmega-2_pin_23": () => {
+        if (!pin23Activated) {
+          pin23Activated = true;
+          section1.style.display = "none";
+          section2.style.display = "flex";
+        }
+      },
+      "SLOTmega-2_pin_24": () => {
+        if (!pin24Activated) {
+          pin24Activated = true;
+          if (typeof window['SLOTmega-1_pin_24_on'] === 'function') {
+            window['SLOTmega-1_pin_24_on']();
+          }
+          redCount++;
+          document.getElementById('redCount').innerText = redCount;
+          handleGetSound();
+        }
+      },
+      "SLOTmega-2_pin_25": () => {
+        if (!pin25Activated) {
+          pin25Activated = true;
+          if (typeof window['SLOTmega-1_pin_25_on'] === 'function') {
+            window['SLOTmega-1_pin_25_on']();
+          }
+          blueCount++;
+          document.getElementById('blueCount').innerText = blueCount;
+          handleGetSound();
+        }
+      },
+      "SLOTmega-2_pin_26": () => {
+        if (!pin26Activated) {
+          pin26Activated = true;
+          if (typeof window['SLOTmega-1_pin_26_on'] === 'function') {
+            window['SLOTmega-1_pin_26_on']();
+          }
+          yellowCount++;
+          document.getElementById('yellowCount').innerText = yellowCount;
+          handleGetSound();
+        }
+      },
+      "SLOTmega-2_pin_27": () => {
+        if (!pin27Activated) {
+          pin27Activated = true;
+          if (typeof window['SLOTmega-1_pin_27_on'] === 'function') {
+            window['SLOTmega-1_pin_27_on']();
+          }
+          redCount++;
+          document.getElementById('redCount').innerText = redCount;
+          handleGetSound();
+        }
+      },
+      "SLOTmega-2_pin_28": () => {
+        if (!pin28Activated) {
+          pin28Activated = true;
+          if (typeof window['SLOTmega-1_pin_28_on'] === 'function') {
+            window['SLOTmega-1_pin_28_on']();
+          }
+          blueCount++;
+          document.getElementById('blueCount').innerText = blueCount;
+          handleGetSound();
+        }
+      },
+      "SLOTmega-2_pin_29": () => {
+        if (!pin29Activated) {
+          pin29Activated = true;
+          if (typeof window['SLOTmega-1_pin_29_on'] === 'function') {
+            window['SLOTmega-1_pin_29_on']();
+          }
+          yellowCount++;
+          document.getElementById('yellowCount').innerText = yellowCount;
+          handleGetSound();
+        }
+      },
+      "SLOTmega-2_pin_30": () => {
+        if (!pin30Activated) {
+          pin30Activated = true;
+          if (typeof window['SLOTmega-1_pin_30_on'] === 'function') {
+            window['SLOTmega-1_pin_30_on']();
+          }
+          redCount++;
+          document.getElementById('redCount').innerText = redCount;
+          handleGetSound();
+        }
+      },
+      "SLOTmega-2_pin_31": () => {
+        if (!pin31Activated) {
+          pin31Activated = true;
+          if (typeof window['SLOTmega-1_pin_31_on'] === 'function') {
+            window['SLOTmega-1_pin_31_on']();
+          }
+          blueCount++;
+          document.getElementById('blueCount').innerText = blueCount;
+          handleGetSound();
+        }
+      },
+      "SLOTmega-2_pin_32": () => {
+        if (!pin32Activated) {
+          pin32Activated = true;
+          if (typeof window['SLOTmega-1_pin_32_on'] === 'function') {
+            window['SLOTmega-1_pin_32_on']();
+          }
+          yellowCount++;
+          document.getElementById('yellowCount').innerText = yellowCount;
+          handleGetSound();
+        }
+      },
+      "SLOTmega-2_pin_33": () => {
+        if (!pin33Activated) {
+          pin33Activated = true;
+          if (typeof window['SLOTmega-1_pin_33_on'] === 'function') {
+            window['SLOTmega-1_pin_33_on']();
+          }
+          redCount++;
+          document.getElementById('redCount').innerText = redCount;
+          handleGetSound();
+        }
+      },
+      "SLOTmega-2_pin_34": () => {
+        if (!pin34Activated) {
+          pin34Activated = true;
+          if (typeof window['SLOTmega-1_pin_34_on'] === 'function') {
+            window['SLOTmega-1_pin_34_on']();
+          }
+          blueCount++;
+          document.getElementById('blueCount').innerText = blueCount;
+          handleGetSound();
+        }
+      },
+      "SLOTmega-2_pin_35": () => {
+        if (!pin35Activated) {
+          pin35Activated = true;
+          if (typeof window['SLOTmega-1_pin_35_on'] === 'function') {
+            window['SLOTmega-1_pin_35_on']();
+          }
+          yellowCount++;
+          document.getElementById('yellowCount').innerText = yellowCount;
+          handleGetSound();
+        }
+      },
+      "SLOTmega-2_pin_36": () => handle39on(),
+      "SLOTmega-2_pin_37": () => handle39on(),
+      "SLOTmega-2_pin_38": () => handle39on(),
+      "SLOTmega-2_pin_39": () => {
+        if (typeof window['SLOTmega-1_pin_23_on'] === 'function') {
+          window['SLOTmega-1_pin_23_on']();
+          setTimeout(() => {
+            if (typeof window['SLOTmega-1_pin_23_off'] === 'function') {
+              window['SLOTmega-1_pin_23_off']();
+            }
+          }, 500);
+        }
+        if (typeof window['SLOTmega-1_pin_22_off'] === 'function') {
+          window['SLOTmega-1_pin_22_off']();
+        }
+        if (typeof window['SLOTmega-1_pin_24_off'] === 'function') {
+          window['SLOTmega-1_pin_24_off']();
+        }
+        if (typeof window['SLOTmega-1_pin_25_off'] === 'function') {
+          window['SLOTmega-1_pin_25_off']();
+        }
+        if (typeof window['SLOTmega-1_pin_26_off'] === 'function') {
+          window['SLOTmega-1_pin_26_off']();
+        }
+        if (typeof window['SLOTmega-1_pin_27_off'] === 'function') {
+          window['SLOTmega-1_pin_27_off']();
+        }
+        if (typeof window['SLOTmega-1_pin_28_off'] === 'function') {
+          window['SLOTmega-1_pin_28_off']();
+        }
+        if (typeof window['SLOTmega-1_pin_29_off'] === 'function') {
+          window['SLOTmega-1_pin_29_off']();
+        }
+        if (typeof window['SLOTmega-1_pin_30_off'] === 'function') {
+          window['SLOTmega-1_pin_30_off']();
+        }
+        if (typeof window['SLOTmega-1_pin_31_off'] === 'function') {
+          window['SLOTmega-1_pin_31_off']();
+        }
+        if (typeof window['SLOTmega-1_pin_32_off'] === 'function') {
+          window['SLOTmega-1_pin_32_off']();
+        }
+        if (typeof window['SLOTmega-1_pin_33_off'] === 'function') {
+          window['SLOTmega-1_pin_33_off']();
+        }
+        if (typeof window['SLOTmega-1_pin_34_off'] === 'function') {
+          window['SLOTmega-1_pin_34_off']();
+        }
+        if (typeof window['SLOTmega-1_pin_35_off'] === 'function') {
+          window['SLOTmega-1_pin_35_off']();
+        }
+        if (typeof window['SLOTmega-1_pin_36_off'] === 'function') {
+          window['SLOTmega-1_pin_36_off']();
+        }
+        if (typeof window['SLOTmega-1_pin_37_off'] === 'function') {
+          window['SLOTmega-1_pin_37_off']();
+        }
+        if (typeof window['SLOTmega-1_pin_38_off'] === 'function') {
+          window['SLOTmega-1_pin_38_off']();
+        }
+        if (typeof window['SLOTmega-1_pin_39_off'] === 'function') {
+          window['SLOTmega-1_pin_39_off']();
+        }
+      },
+      "SLOTmega-2_pin_40": () => {
+        if (codeCleared) {
+          if (spinning) return;
+          if (isErrorPopupOpen) return;
+          if (codeCleared && redCount > 0 && blueCount > 0 && yellowCount > 0) {
+            redCount--;
+            document.getElementById('redCount').innerText = redCount;
+            blueCount--;
+            document.getElementById('blueCount').innerText = blueCount;
+            yellowCount--;
+            document.getElementById('yellowCount').innerText = yellowCount;
+            startSpin();
+          } else {
+            isErrorPopupOpen = true;
+            new Audio(`./sound/sound_effect/4_popup_sound.mp3`).play();
+            showElement('count-error-popup');
+          }
+        }
+      },
+      "SLOTmega-2_pin_41": () => {
+        if (!pin41Activated) {
+          pin41Activated = true;
+          new Audio(`./sound/sound_effect/1_Door_unlock.mp3`).play();
+          setTimeout(() => {
+            const bgm = new Audio('./sound/sound_effect/BGM_EL.mp3');
+            bgm.loop = true;
+            bgm.play();
+          }, 3000);
+          setTimeout(() => {
+            new Audio(`./sound/narration/narration_sample.ogg`).play();
+          }, 5000);
+        }
       },
     };
 
@@ -36,11 +420,357 @@
     setInterval(() => {
       Object.keys(pinActions).forEach(updatePinDisplay);
     }, 200);
-
     $('#section0').click(function () {
       section0.style.display = "none";
     });
 
+    function handle39on() {
+      if (pin41Activated && !pin363738Activated) {
+        pin363738Activated = true;
+        if (typeof window['SLOTmega-1_pin_39_on'] === 'function') {
+          window['SLOTmega-1_pin_39_on']();
+        }
+      }
+    }
+
+    function handleGetSound() {
+      if (codeCleared) {
+        new Audio(`./sound/sound_effect/3&5_click_sound.mp3`).play();
+      }
+    }
+
+    $('#count-error-btn').click(function () {
+      new Audio(`./sound/sound_effect/4_popup_sound.mp3`).play();
+      hideElement('count-error-popup');
+      setTimeout(() => {
+        isErrorPopupOpen = false;
+      }, 500);
+    });
+  </script>
+
+  <script>
+    const ALPHABET = Array.from({ length: 26 }, (_, i) =>
+      String.fromCharCode('A'.charCodeAt(0) + i)
+    );
+    const DIGITS = Array.from({ length: 10 }, (_, i) => String(i));
+
+    const digitBoxes = document.querySelectorAll('.digit-box');
+    const popup = document.getElementById('section2-popup');
+    const yesBtn = document.getElementById('yes-btn');
+    const noBtn = document.getElementById('no-btn');
+    let isPopupOpen = false;
+
+    digitBoxes.forEach((box) => {
+      const type = box.dataset.type;
+      const spanValue = box.querySelector('.value');
+      const btnUp = box.querySelector('.arrow-up');
+      const btnDown = box.querySelector('.arrow-down');
+
+      btnUp.addEventListener('click', () => {
+        if (isPopupOpen) return;
+        new Audio(`./sound/sound_effect/3&5_click_sound.mp3`).play();
+        let current = spanValue.textContent.trim();
+        if (type === 'letter') {
+          let idx = ALPHABET.indexOf(current);
+          idx = (idx + 1) % ALPHABET.length;
+          spanValue.textContent = ALPHABET[idx];
+        } else if (type === 'number') {
+          let idx = DIGITS.indexOf(current);
+          idx = (idx + 1) % DIGITS.length;
+          spanValue.textContent = DIGITS[idx];
+        }
+        checkAnswer();
+      });
+
+      btnDown.addEventListener('click', () => {
+        if (isPopupOpen) return;
+        new Audio(`./sound/sound_effect/3&5_click_sound.mp3`).play();
+        let current = spanValue.textContent.trim();
+        if (type === 'letter') {
+          let idx = ALPHABET.indexOf(current);
+          idx = (idx - 1 + ALPHABET.length) % ALPHABET.length;
+          spanValue.textContent = ALPHABET[idx];
+        } else if (type === 'number') {
+          let idx = DIGITS.indexOf(current);
+          idx = (idx - 1 + DIGITS.length) % DIGITS.length;
+          spanValue.textContent = DIGITS[idx];
+        }
+        checkAnswer();
+      });
+    });
+
+    function checkAnswer() {
+      const values = Array.from(digitBoxes).map((box) =>
+        box.querySelector('.value').textContent.trim()
+      );
+      const code = values.join('');
+      if (code === 'CM2K' && !isPopupOpen) {
+        showPopup();
+      }
+      // if (code === 'AA1A' && !isPopupOpen) {
+      //   showPopup();
+      // }
+    }
+
+    function showElement(target) {
+      const el = typeof target === 'string'
+        ? document.getElementById(target)
+        : target;
+      if (!el) return;
+      el.style.transition = `opacity ${300}ms ease`;
+      el.style.display = 'flex';
+      requestAnimationFrame(() => {
+        el.style.opacity = '1';
+      });
+    }
+
+
+    function hideElement(target) {
+      const el = typeof target === 'string'
+        ? document.getElementById(target)
+        : target;
+      if (!el) return;
+      const style = window.getComputedStyle(el);
+      if (style.display === 'none' || parseFloat(style.opacity) === 0) {
+        return;
+      }
+      el.style.transition = `opacity ${300}ms ease`;
+      el.style.opacity = '0';
+      setTimeout(() => {
+        el.style.display = 'none';
+      }, 300);
+    }
+
+    function showPopup() {
+      isPopupOpen = true;
+      showElement('section2-popup');
+    }
+    function hidePopup() {
+      hideElement('section2-popup');
+      setTimeout(() => {
+        isPopupOpen = false;
+      }, 300);
+    }
+
+    yesBtn.addEventListener('click', () => {
+      new Audio(`./sound/sound_effect/4_popup_sound.mp3`).play();
+      hidePopup();
+      section2.style.display = "none";
+      section3.style.display = "flex";
+      codeCleared = true;
+    });
+    noBtn.addEventListener('click', () => {
+      new Audio(`./sound/sound_effect/4_popup_sound.mp3`).play();
+      hidePopup();
+    });
+  </script>
+  <script>
+    let reelContents = ["🍒", "🍋", "🔔", "💎", "❤️", "👻", "7️⃣"];
+    let reelLength = 3;
+    let reelContainers = document.querySelectorAll(".reel-container");
+    let spinningReels = [];
+    let spinning = false;
+    let reelDelay = 50;
+
+    let reelIndices = [0, 0, 0];
+    let spinCount = 0;
+    let useSequential = false;
+
+    function getReelItem(reelIndex) {
+      let newReel = document.createElement("div");
+
+      if (useSequential) {
+        newReel.innerHTML = reelContents[reelIndices[reelIndex]];
+        reelIndices[reelIndex] = (reelIndices[reelIndex] + 1) % reelContents.length;
+      } else {
+        newReel.innerHTML =
+          reelContents[Math.floor(Math.random() * reelContents.length)];
+      }
+
+      newReel.classList.add("reel-item");
+      setTimeout(() => newReel.classList.add("active"), 0);
+
+      return newReel;
+    }
+
+    function moveReel(reelIndex) {
+      let selectedReel = reelContainers[reelIndex];
+      selectedReel.prepend(getReelItem(reelIndex));
+
+      if (selectedReel.children.length > reelLength) {
+        let lastChild = selectedReel.lastElementChild;
+        lastChild.classList.add("deactivate");
+        setTimeout(() => {
+          selectedReel.removeChild(lastChild);
+        }, reelDelay);
+      }
+    }
+
+    function startSpin() {
+      new Audio(`./sound/sound_effect/6_slotmachine.mp3`).play();
+      if (spinning) return;
+      spinCount++;
+      if (spinCount === 1) {
+        useSequential = false;
+      } else if (spinCount === 2) {
+        useSequential = (Math.random() < 0.2);
+      } else if (spinCount === 3) {
+        useSequential = (Math.random() < 0.5);
+      } else {
+        useSequential = true;
+      }
+
+      document.querySelectorAll(".prize-item.active").forEach(s => {
+        s.classList.remove("active");
+      });
+      if (useSequential) {
+        reelIndices = [0, 0, 0];
+      }
+      spinningReels = [0];
+      setTimeout(() => spinningReels.push(1), reelDelay);
+      setTimeout(() => spinningReels.push(2), reelDelay * 2);
+
+      spinning = true;
+      spinUpdate(70);
+    }
+
+    function spinUpdate(spinsLeft) {
+      spinningReels.forEach(n => {
+        moveReel(n);
+      });
+
+      if (spinsLeft > 0) {
+        setTimeout(() => {
+          spinUpdate(spinsLeft - 1);
+        }, reelDelay);
+      } else {
+        if (spinningReels.length > 0) {
+          spinningReels.shift();
+          setTimeout(() => spinUpdate(0), reelDelay);
+        } else {
+          spinning = false;
+          findWins();
+        }
+      }
+    }
+
+    reelContainers.forEach((reel, i) => {
+      for (let n = 0; n < reelLength; n++) {
+        moveReel(i);
+      }
+    });
+
+    function findWins() {
+      let winline = [];
+      let symbols = {};
+
+      reelContainers.forEach(reel => {
+        let symbol = reel.children[1].innerText;
+        winline.push(symbol);
+        symbols[symbol] = (symbols[symbol] || 0) + 1;
+      });
+
+      setTimeout(() => {
+        if (winline.filter(s => s === winline[0]).length === 3) {
+          if (spinCount === 4) {
+            showElement('section3-rare-last-popup');
+          } else {
+            showElement('section3-rare-popup');
+          }
+        } else {
+          showElement('section3-normal-popup');
+        }
+      }, 500);
+    }
+
+    $('#normal-yes-btn').click(() => {
+      hideElement('section3-normal-popup');
+      showFinalScreen();
+      if (typeof window['SLOTmega-1_pin_36_on'] === 'function') {
+        window['SLOTmega-1_pin_36_on']();
+        setTimeout(() => {
+          if (typeof window['SLOTmega-1_pin_36_off'] === 'function') {
+            window['SLOTmega-1_pin_36_off']();
+          }
+        }, 500);
+      }
+    });
+    $('#normal-no-btn').click(() => {
+      hideElement('section3-normal-popup');
+    });
+    $('#rare-yes-btn').click(() => {
+      hideElement('section3-rare-popup');
+      showFinalScreen();
+      if (typeof window['SLOTmega-1_pin_37_on'] === 'function') {
+        window['SLOTmega-1_pin_37_on']();
+        setTimeout(() => {
+          if (typeof window['SLOTmega-1_pin_37_off'] === 'function') {
+            window['SLOTmega-1_pin_37_off']();
+          }
+          if (typeof window['SLOTmega-1_pin_38_on'] === 'function') {
+            window['SLOTmega-1_pin_38_on']();
+          }
+        }, 500);
+      }
+    });
+    $('#rare-ok-btn').click(() => {
+      hideElement('section3-rare-last-popup');
+      showFinalScreen();
+      if (typeof window['SLOTmega-1_pin_37_on'] === 'function') {
+        window['SLOTmega-1_pin_37_on']();
+        setTimeout(() => {
+          if (typeof window['SLOTmega-1_pin_37_off'] === 'function') {
+            window['SLOTmega-1_pin_37_off']();
+          }
+          if (typeof window['SLOTmega-1_pin_38_on'] === 'function') {
+            window['SLOTmega-1_pin_38_on']();
+          }
+        }, 500);
+      }
+    });
+    $('#rare-no-btn').click(() => {
+      if (spinCount < 4) {
+        hideElement('section3-rare-popup');
+      }
+    });
+
+    function showFinalScreen() {
+      new Audio(`./sound/sound_effect/7_making_sound.mp4`).play();
+      section3.style.display = "none";
+      section4.style.display = "flex";
+      setTimeout(() => {
+        document.getElementById('final-text').textContent = "제작중.";
+      }, 500);
+      setTimeout(() => {
+        document.getElementById('final-text').textContent = "제작중..";
+      }, 1000);
+      setTimeout(() => {
+        document.getElementById('final-text').textContent = "제작중...";
+      }, 1500);
+      setTimeout(() => {
+        document.getElementById('final-text').textContent = "제작중.";
+      }, 2000);
+      setTimeout(() => {
+        document.getElementById('final-text').textContent = "제작중..";
+      }, 2500);
+      setTimeout(() => {
+        document.getElementById('final-text').textContent = "제작중...";
+      }, 3000);
+      setTimeout(() => {
+        document.getElementById('final-text').textContent = "제작중.";
+      }, 3500);
+      setTimeout(() => {
+        document.getElementById('final-text').textContent = "제작중..";
+      }, 4000);
+      setTimeout(() => {
+        document.getElementById('final-text').textContent = "제작중...";
+      }, 4500);
+      setTimeout(() => {
+        document.getElementById('final-text').style.fontSize = "110px";
+        document.getElementById('final-text').style.whiteSpace = "pre-wrap";
+        document.getElementById('final-text').textContent = "제작완료\n시스템을 종료합니다.";
+      }, 5000);
+    }
   </script>
   <script src="../script.js"></script>
 </body>

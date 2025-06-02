@@ -70,11 +70,33 @@
         <div class="pin-toggle">Pin 7: <button id="b7">OFF</button></div>
     </section>
 
+    <!-- electric-shop -->
+    <section>
+        <h2>electric-shop (SLOTmega-2) 핀</h2>
+        <div class="pin-toggle">Pin 22: <button id="e22">OFF</button></div>
+        <div class="pin-toggle">Pin 23: <button id="e23">OFF</button></div>
+        <div class="pin-toggle">Pin 24: <button id="e24">OFF</button></div>
+        <div class="pin-toggle">Pin 25: <button id="e25">OFF</button></div>
+        <div class="pin-toggle">Pin 26: <button id="e26">OFF</button></div>
+        <div class="pin-toggle">Pin 27: <button id="e27">OFF</button></div>
+        <div class="pin-toggle">Pin 28: <button id="e28">OFF</button></div>
+        <div class="pin-toggle">Pin 29: <button id="e29">OFF</button></div>
+        <div class="pin-toggle">Pin 30: <button id="e30">OFF</button></div>
+        <div class="pin-toggle">Pin 31: <button id="e31">OFF</button></div>
+        <div class="pin-toggle">Pin 32: <button id="e32">OFF</button></div>
+        <div class="pin-toggle">Pin 33: <button id="e33">OFF</button></div>
+        <div class="pin-toggle">Pin 34: <button id="e34">OFF</button></div>
+        <div class="pin-toggle">Pin 35: <button id="e35">OFF</button></div>
+        <div class="pin-toggle">Pin 40: <button id="e40">OFF</button></div>
+        <div class="pin-toggle">Pin 41: <button id="e41">OFF</button></div>
+    </section>
+
     <div id="log">▶ 로그가 여기에 표시됩니다.</div>
 
     <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 50px;">
         <a href="./atm/normal.html" target="_blank">정상 ATM</a>
         <a href="./atm/broken.html" target="_blank">고장난 ATM</a>
+        <a href="./electric-shop/" target="_blank">전파상 슬롯</a>
     </div>
 
     <script>
@@ -82,6 +104,7 @@
         // 두 기기 별 상태 저장
         const stateNormal = { 22: 'off', 23: 'off', 24: 'off', 25: 'off', 26: 'off', 27: 'off', 28: 'off' };
         const stateBroken = { 12: 'off', 11: 'off', 10: 'off', 9: 'off', 8: 'off', 7: 'off' };
+        const stateElecttronic = { 22: 'off', 22: 'off', 23: 'off', 24: 'off', 25: 'off', 26: 'off', 27: 'off', 28: 'off', 29: 'off', 30: 'off', 31: 'off', 32: 'off', 33: 'off', 34: 'off', 35: 'off', 40: 'off', 41: 'off' };
         const logEl = document.getElementById('log');
 
         function log(txt) {
@@ -92,19 +115,21 @@
         }
 
         function sendUpdate() {
-            // Normal pins
             const pinsN = Object.entries(stateNormal).map(([pin, st]) => ({
                 pin: Number(pin), mode: 'read', state: st
             }));
-            // Broken pins
             const pinsB = Object.entries(stateBroken).map(([pin, st]) => ({
+                pin: Number(pin), mode: 'read', state: st
+            }));
+            const pinsE = Object.entries(stateElecttronic).map(([pin, st]) => ({
                 pin: Number(pin), mode: 'read', state: st
             }));
             const msg = {
                 type: 'slaveUpdate',
                 arduinos: [
-                    { arduinoID: 'ATMmega-1', arduinoNickname: 'NormalSim', pins: pinsN },
-                    { arduinoID: 'ATMuno-1', arduinoNickname: 'BrokenSim', pins: pinsB }
+                    { arduinoID: 'ATMmega-1', pins: pinsN },
+                    { arduinoID: 'ATMuno-1', pins: pinsB },
+                    { arduinoID: 'SLOTmega-2', pins: pinsE }
                 ]
             };
             channel.postMessage(msg);
@@ -122,15 +147,14 @@
             });
         }
 
-        // ATM-Normal: ids n22, n23, …, n28
         bindButtons('n', stateNormal, [22, 23, 24, 25, 26, 27, 28]);
-        // ATM-Broken: ids b12, b10, …, b7
         bindButtons('b', stateBroken, [12, 11, 10, 9, 8, 7]);
+        bindButtons('e', stateElecttronic, [22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 40, 41]);
 
         // Front 로부터 오는 제어 메시지 로깅
         channel.onmessage = ev => {
             const d = ev.data;
-            if ((d.arduinoID === 'ATMmega-1' || d.arduinoID === 'ATMuno-1') && d.command) {
+            if ((d.arduinoID === 'ATMmega-1' || d.arduinoID === 'ATMuno-1' || d.arduinoID === 'SLOTmega-2') && d.command) {
                 log(`← 제어: [${d.arduinoID}] pin ${d.pin} → ${d.command}`);
             }
         };
