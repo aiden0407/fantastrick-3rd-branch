@@ -1,0 +1,21 @@
+@font-face {
+    font-family: 'VITRO_CORE';
+    src: url('./font/VITRO_CORE.otf') format('otf');
+}
+
+@font-face {
+    font-family: 'VITRO_INSPIRE';
+    src: url('./font/VITRO_INSPIRE.otf') format('otf');
+}
+
+@font-face {
+    font-family: 'VITRO_PRIDE';
+    src: url('./font/VITRO_PRIDE.otf') format('otf');
+}
+
+body {
+    background-color: black;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
