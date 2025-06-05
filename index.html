@@ -91,7 +91,27 @@
         <div class="pin-toggle">Pin 41: <button id="e41">OFF</button></div>
     </section>
 
-    <div id="log">▶ 로그가 여기에 표시됩니다.</div>
+    <!-- disinfecting-room -->
+    <section>
+        <h2>disinfecting-room (disinfectmega-2) 핀</h2>
+        <div class="pin-toggle">Pin 22: <button id="d22">OFF</button></div>
+        <div class="pin-toggle">Pin 23: <button id="d23">OFF</button></div>
+        <div class="pin-toggle">Pin 24: <button id="d24">OFF</button></div>
+        <div class="pin-toggle">Pin 25: <button id="d25">OFF</button></div>
+        <div class="pin-toggle">Pin 26: <button id="d26">OFF</button></div>
+        <div class="pin-toggle">Pin 27: <button id="d27">OFF</button></div>
+        <div class="pin-toggle">Pin 28: <button id="d28">OFF</button></div>
+        <div class="pin-toggle">Pin 29: <button id="d29">OFF</button></div>
+        <div class="pin-toggle">Pin 30: <button id="d30">OFF</button></div>
+        <div class="pin-toggle">Pin 31: <button id="d31">OFF</button></div>
+        <div class="pin-toggle">Pin 32: <button id="d32">OFF</button></div>
+        <div class="pin-toggle">Pin 33: <button id="d33">OFF</button></div>
+        <div class="pin-toggle">Pin 34: <button id="d34">OFF</button></div>
+        <div class="pin-toggle">Pin 35: <button id="d35">OFF</button></div>
+        <div class="pin-toggle">Pin 36: <button id="d36">OFF</button></div>
+    </section>
+
+    <!-- <div id="log">▶ 로그가 여기에 표시됩니다.</div> -->
 
     <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 50px;">
         <a href="./atm/normal.html" target="_blank">정상 ATM</a>
@@ -102,18 +122,18 @@
 
     <script>
         const channel = new BroadcastChannel('arduino_channel');
-        // 두 기기 별 상태 저장
         const stateNormal = { 22: 'off', 23: 'off', 24: 'off', 25: 'off', 26: 'off', 27: 'off', 28: 'off' };
         const stateBroken = { 12: 'off', 11: 'off', 10: 'off', 9: 'off', 8: 'off', 7: 'off' };
-        const stateElecttronic = { 22: 'off', 22: 'off', 23: 'off', 24: 'off', 25: 'off', 26: 'off', 27: 'off', 28: 'off', 29: 'off', 30: 'off', 31: 'off', 32: 'off', 33: 'off', 34: 'off', 35: 'off', 40: 'off', 41: 'off' };
-        const logEl = document.getElementById('log');
+        const stateElecttronic = { 22: 'off', 23: 'off', 24: 'off', 25: 'off', 26: 'off', 27: 'off', 28: 'off', 29: 'off', 30: 'off', 31: 'off', 32: 'off', 33: 'off', 34: 'off', 35: 'off', 40: 'off', 41: 'off' };
+        const stateDisinfecting = { 22: 'off', 23: 'off', 24: 'off', 25: 'off', 26: 'off', 27: 'off', 28: 'off', 29: 'off', 30: 'off', 31: 'off', 32: 'off', 33: 'off', 34: 'off', 35: 'off', 36: 'off' };
+        // const logEl = document.getElementById('log');
 
-        function log(txt) {
-            const d = document.createElement('div');
-            d.textContent = txt;
-            logEl.appendChild(d);
-            logEl.scrollTop = logEl.scrollHeight;
-        }
+        // function log(txt) {
+        //     const d = document.createElement('div');
+        //     d.textContent = txt;
+        //     logEl.appendChild(d);
+        //     logEl.scrollTop = logEl.scrollHeight;
+        // }
 
         function sendUpdate() {
             const pinsN = Object.entries(stateNormal).map(([pin, st]) => ({
@@ -125,16 +145,20 @@
             const pinsE = Object.entries(stateElecttronic).map(([pin, st]) => ({
                 pin: Number(pin), mode: 'read', state: st
             }));
+            const pinsD = Object.entries(stateDisinfecting).map(([pin, st]) => ({
+                pin: Number(pin), mode: 'read', state: st
+            }));
             const msg = {
                 type: 'slaveUpdate',
                 arduinos: [
                     { arduinoID: 'ATMmega-1', pins: pinsN },
                     { arduinoID: 'ATMuno-1', pins: pinsB },
-                    { arduinoID: 'SLOTmega-2', pins: pinsE }
+                    { arduinoID: 'SLOTmega-2', pins: pinsE },
+                    { arduinoID: 'disinfectmega-2', pins: pinsD }
                 ]
             };
             channel.postMessage(msg);
-            log('→ 전송: ' + JSON.stringify(msg.arduinos, null, 2));
+            // log('→ 전송: ' + JSON.stringify(msg.arduinos, null, 2));
         }
 
         function bindButtons(prefix, stateObj, pins) {
@@ -151,18 +175,19 @@
         bindButtons('n', stateNormal, [22, 23, 24, 25, 26, 27, 28]);
         bindButtons('b', stateBroken, [12, 11, 10, 9, 8, 7]);
         bindButtons('e', stateElecttronic, [22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 40, 41]);
+        bindButtons('d', stateDisinfecting, [22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36]);
 
         // Front 로부터 오는 제어 메시지 로깅
         channel.onmessage = ev => {
             const d = ev.data;
             if ((d.arduinoID === 'ATMmega-1' || d.arduinoID === 'ATMuno-1' || d.arduinoID === 'SLOTmega-2') && d.command) {
-                log(`← 제어: [${d.arduinoID}] pin ${d.pin} → ${d.command}`);
+                // log(`← 제어: [${d.arduinoID}] pin ${d.pin} → ${d.command}`);
             }
         };
 
         window.addEventListener('DOMContentLoaded', () => {
             sendUpdate();
-            log('● Simulator 시작');
+            // log('● Simulator 시작');
         });
     </script>
 </body>
