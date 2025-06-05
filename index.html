@@ -111,6 +111,38 @@
         <div class="pin-toggle">Pin 36: <button id="d36">OFF</button></div>
     </section>
 
+    <!-- safe-house -->
+    <section>
+        <h2>safe-house (safemega-1) 핀</h2>
+        <div class="pin-toggle">Pin 22: <button id="s22">OFF</button></div>
+        <div class="pin-toggle">Pin 24: <button id="s24">OFF</button></div>
+        <div class="pin-toggle">Pin 25: <button id="s25">OFF</button></div>
+        <div class="pin-toggle">Pin 26: <button id="s26">OFF</button></div>
+        <div class="pin-toggle">Pin 27: <button id="s27">OFF</button></div>
+        <div class="pin-toggle">Pin 28: <button id="s28">OFF</button></div>
+        <div class="pin-toggle">Pin 29: <button id="s29">OFF</button></div>
+        <div class="pin-toggle">Pin 30: <button id="s30">OFF</button></div>
+        <div class="pin-toggle">Pin 31: <button id="s31">OFF</button></div>
+    </section>
+
+    <!-- envy-bar -->
+    <section>
+        <h2>envy-bar (barmega-1) 핀</h2>
+        <div class="pin-toggle">Pin 22: <button id="v22">OFF</button></div>
+        <div class="pin-toggle">Pin 23: <button id="v23">OFF</button></div>
+        <div class="pin-toggle">Pin 24: <button id="v24">OFF</button></div>
+        <div class="pin-toggle">Pin 25: <button id="v25">OFF</button></div>
+        <div class="pin-toggle">Pin 26: <button id="v26">OFF</button></div>
+        <div class="pin-toggle">Pin 27: <button id="v27">OFF</button></div>
+        <div class="pin-toggle">Pin 28: <button id="v28">OFF</button></div>
+        <div class="pin-toggle">Pin 29: <button id="v29">OFF</button></div>
+        <div class="pin-toggle">Pin 30: <button id="v30">OFF</button></div>
+        <div class="pin-toggle">Pin 31: <button id="v31">OFF</button></div>
+        <div class="pin-toggle">Pin 32: <button id="v32">OFF</button></div>
+        <div class="pin-toggle">Pin 33: <button id="v33">OFF</button></div>
+        <div class="pin-toggle">Pin 34: <button id="v34">OFF</button></div>
+    </section>
+
     <!-- <div id="log">▶ 로그가 여기에 표시됩니다.</div> -->
 
     <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 50px;">
@@ -128,6 +160,8 @@
         const stateBroken = { 12: 'off', 11: 'off', 10: 'off', 9: 'off', 8: 'off', 7: 'off' };
         const stateElecttronic = { 22: 'off', 23: 'off', 24: 'off', 25: 'off', 26: 'off', 27: 'off', 28: 'off', 29: 'off', 30: 'off', 31: 'off', 32: 'off', 33: 'off', 34: 'off', 35: 'off', 40: 'off', 41: 'off' };
         const stateDisinfecting = { 22: 'off', 23: 'off', 24: 'off', 25: 'off', 26: 'off', 27: 'off', 28: 'off', 29: 'off', 30: 'off', 31: 'off', 32: 'off', 33: 'off', 34: 'off', 35: 'off', 36: 'off' };
+        const stateSafe = { 22: 'off', 24: 'off', 25: 'off', 26: 'off', 27: 'off', 28: 'off', 29: 'off', 30: 'off', 31: 'off' };
+        const stateBar = { 22: 'off', 23: 'off', 24: 'off', 25: 'off', 26: 'off', 27: 'off', 28: 'off', 29: 'off', 30: 'off', 31: 'off', 32: 'off', 33: 'off', 34: 'off' };
         // const logEl = document.getElementById('log');
 
         // function log(txt) {
@@ -150,13 +184,22 @@
             const pinsD = Object.entries(stateDisinfecting).map(([pin, st]) => ({
                 pin: Number(pin), mode: 'read', state: st
             }));
+            const pinsS = Object.entries(stateSafe).map(([pin, st]) => ({
+                pin: Number(pin), mode: 'read', state: st
+            }));
+            const pinsV = Object.entries(stateBar).map(([pin, st]) => ({
+                pin: Number(pin), mode: 'read', state: st
+            }));
+
             const msg = {
                 type: 'slaveUpdate',
                 arduinos: [
                     { arduinoID: 'ATMmega-1', pins: pinsN },
                     { arduinoID: 'ATMuno-1', pins: pinsB },
                     { arduinoID: 'SLOTmega-2', pins: pinsE },
-                    { arduinoID: 'disinfectmega-2', pins: pinsD }
+                    { arduinoID: 'disinfectmega-2', pins: pinsD },
+                    { arduinoID: 'safemega-1', pins: pinsS },
+                    { arduinoID: 'barmega-1', pins: pinsV }
                 ]
             };
             channel.postMessage(msg);
@@ -178,6 +221,8 @@
         bindButtons('b', stateBroken, [12, 11, 10, 9, 8, 7]);
         bindButtons('e', stateElecttronic, [22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 40, 41]);
         bindButtons('d', stateDisinfecting, [22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36]);
+        bindButtons('s', stateSafe, [22, 24, 25, 26, 27, 28, 29, 30, 31]);
+        bindButtons('v', stateBar, [22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34]);
 
         // Front 로부터 오는 제어 메시지 로깅
         channel.onmessage = ev => {
