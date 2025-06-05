@@ -36,8 +36,8 @@ body {
     display: none;
     justify-content: center;
     align-items: center;
-    background-color: #305C6D;
-    /* background-image: url('./img/back_ground.jpg'); */
+    /* background-color: #305C6D; */
+    background-image: url('./img/back_ground.jpg');
     position: relative;
 }
 
