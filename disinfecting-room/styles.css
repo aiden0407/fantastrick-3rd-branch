@@ -1,21 +1,39 @@
-@font-face {
-    font-family: 'VITRO_CORE';
-    src: url('./font/VITRO_CORE.otf') format('otf');
-}
-
-@font-face {
-    font-family: 'VITRO_INSPIRE';
-    src: url('./font/VITRO_INSPIRE.otf') format('otf');
-}
-
-@font-face {
-    font-family: 'VITRO_PRIDE';
-    src: url('./font/VITRO_PRIDE.otf') format('otf');
-}
-
 body {
     background-color: black;
     margin: 0;
     padding: 0;
     overflow: hidden;
+}
+
+.section {
+    width: 100%;
+    height: 100dvh;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    background-image: url('./img/background.png');
+    position: relative;
+}
+
+.main-btn {
+    width: 100%;
+    cursor: pointer;
+}
+
+.main1-btn {
+    width: 48%;
+    cursor: pointer;
+}
+
+.popup {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100dvh;
+    background-color: rgba(0, 0, 0, 0.6);
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
 }
