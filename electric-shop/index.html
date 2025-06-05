@@ -317,65 +317,27 @@
       "SLOTmega-2_pin_37": () => handle39on(),
       "SLOTmega-2_pin_38": () => handle39on(),
       "SLOTmega-2_pin_39": () => {
-        if (typeof window['SLOTmega-1_pin_23_on'] === 'function') {
-          window['SLOTmega-1_pin_23_on']();
-          setTimeout(() => {
-            if (typeof window['SLOTmega-1_pin_23_off'] === 'function') {
-              window['SLOTmega-1_pin_23_off']();
-            }
-          }, 500);
-        }
-        if (typeof window['SLOTmega-1_pin_22_off'] === 'function') {
-          window['SLOTmega-1_pin_22_off']();
-        }
-        if (typeof window['SLOTmega-1_pin_24_off'] === 'function') {
-          window['SLOTmega-1_pin_24_off']();
-        }
-        if (typeof window['SLOTmega-1_pin_25_off'] === 'function') {
-          window['SLOTmega-1_pin_25_off']();
-        }
-        if (typeof window['SLOTmega-1_pin_26_off'] === 'function') {
-          window['SLOTmega-1_pin_26_off']();
-        }
-        if (typeof window['SLOTmega-1_pin_27_off'] === 'function') {
-          window['SLOTmega-1_pin_27_off']();
-        }
-        if (typeof window['SLOTmega-1_pin_28_off'] === 'function') {
-          window['SLOTmega-1_pin_28_off']();
-        }
-        if (typeof window['SLOTmega-1_pin_29_off'] === 'function') {
-          window['SLOTmega-1_pin_29_off']();
-        }
-        if (typeof window['SLOTmega-1_pin_30_off'] === 'function') {
-          window['SLOTmega-1_pin_30_off']();
-        }
-        if (typeof window['SLOTmega-1_pin_31_off'] === 'function') {
-          window['SLOTmega-1_pin_31_off']();
-        }
-        if (typeof window['SLOTmega-1_pin_32_off'] === 'function') {
-          window['SLOTmega-1_pin_32_off']();
-        }
-        if (typeof window['SLOTmega-1_pin_33_off'] === 'function') {
-          window['SLOTmega-1_pin_33_off']();
-        }
-        if (typeof window['SLOTmega-1_pin_34_off'] === 'function') {
-          window['SLOTmega-1_pin_34_off']();
-        }
-        if (typeof window['SLOTmega-1_pin_35_off'] === 'function') {
-          window['SLOTmega-1_pin_35_off']();
-        }
-        if (typeof window['SLOTmega-1_pin_36_off'] === 'function') {
-          window['SLOTmega-1_pin_36_off']();
-        }
-        if (typeof window['SLOTmega-1_pin_37_off'] === 'function') {
-          window['SLOTmega-1_pin_37_off']();
-        }
-        if (typeof window['SLOTmega-1_pin_38_off'] === 'function') {
-          window['SLOTmega-1_pin_38_off']();
-        }
-        if (typeof window['SLOTmega-1_pin_39_off'] === 'function') {
-          window['SLOTmega-1_pin_39_off']();
-        }
+        triggerPinOnAndOff('SLOTmega-1_pin_23');
+        triggerPinOff('SLOTmega-1_pin_22');
+        triggerPinOff('SLOTmega-1_pin_24');
+        triggerPinOff('SLOTmega-1_pin_25');
+        triggerPinOff('SLOTmega-1_pin_26');
+        triggerPinOff('SLOTmega-1_pin_27');
+        triggerPinOff('SLOTmega-1_pin_28');
+        triggerPinOff('SLOTmega-1_pin_29');
+        triggerPinOff('SLOTmega-1_pin_30');
+        triggerPinOff('SLOTmega-1_pin_31');
+        triggerPinOff('SLOTmega-1_pin_32');
+        triggerPinOff('SLOTmega-1_pin_33');
+        triggerPinOff('SLOTmega-1_pin_34');
+        triggerPinOff('SLOTmega-1_pin_35');
+        triggerPinOff('SLOTmega-1_pin_36');
+        triggerPinOff('SLOTmega-1_pin_37');
+        triggerPinOff('SLOTmega-1_pin_38');
+        triggerPinOff('SLOTmega-1_pin_39');
+        setTimeout(() => {
+          location.reload();
+        }, 1000);
       },
       "SLOTmega-2_pin_40": () => {
         if (codeCleared) {
@@ -686,14 +648,7 @@
     $('#normal-yes-btn').click(() => {
       hideElement('section3-normal-popup');
       showFinalScreen();
-      if (typeof window['SLOTmega-1_pin_36_on'] === 'function') {
-        window['SLOTmega-1_pin_36_on']();
-        setTimeout(() => {
-          if (typeof window['SLOTmega-1_pin_36_off'] === 'function') {
-            window['SLOTmega-1_pin_36_off']();
-          }
-        }, 500);
-      }
+      triggerPinOnAndOff('SLOTmega-1_pin_36');
     });
     $('#normal-no-btn').click(() => {
       hideElement('section3-normal-popup');
@@ -701,32 +656,22 @@
     $('#rare-yes-btn').click(() => {
       hideElement('section3-rare-popup');
       showFinalScreen();
-      if (typeof window['SLOTmega-1_pin_37_on'] === 'function') {
-        window['SLOTmega-1_pin_37_on']();
-        setTimeout(() => {
-          if (typeof window['SLOTmega-1_pin_37_off'] === 'function') {
-            window['SLOTmega-1_pin_37_off']();
-          }
-          if (typeof window['SLOTmega-1_pin_38_on'] === 'function') {
-            window['SLOTmega-1_pin_38_on']();
-          }
-        }, 500);
-      }
+      triggerPinOnAndOff('SLOTmega-1_pin_37');
+      setTimeout(() => {
+        if (typeof window['SLOTmega-1_pin_38_on'] === 'function') {
+          window['SLOTmega-1_pin_38_on']();
+        }
+      }, 500);
     });
     $('#rare-ok-btn').click(() => {
       hideElement('section3-rare-last-popup');
       showFinalScreen();
-      if (typeof window['SLOTmega-1_pin_37_on'] === 'function') {
-        window['SLOTmega-1_pin_37_on']();
-        setTimeout(() => {
-          if (typeof window['SLOTmega-1_pin_37_off'] === 'function') {
-            window['SLOTmega-1_pin_37_off']();
-          }
-          if (typeof window['SLOTmega-1_pin_38_on'] === 'function') {
-            window['SLOTmega-1_pin_38_on']();
-          }
-        }, 500);
-      }
+      triggerPinOnAndOff('SLOTmega-1_pin_37');
+      setTimeout(() => {
+        if (typeof window['SLOTmega-1_pin_38_on'] === 'function') {
+          window['SLOTmega-1_pin_38_on']();
+        }
+      }, 500);
     });
     $('#rare-no-btn').click(() => {
       if (spinCount < 4) {

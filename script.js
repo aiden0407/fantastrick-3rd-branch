@@ -173,3 +173,34 @@ document.addEventListener('keydown', (event) => {
     event.preventDefault();
   }
 });
+
+function triggerPinOn(pinName) {
+  const onName  = `${pinName}_on`;
+  const onFunc  = window[onName];
+  if (typeof onFunc === 'function') {
+    onFunc();
+  }
+}
+
+function triggerPinOff(pinName) {
+  const onName  = `${pinName}_off`;
+  const onFunc  = window[onName];
+  if (typeof onFunc === 'function') {
+    onFunc();
+  }
+}
+
+function triggerPinOnAndOff(pinName) {
+  const onName  = `${pinName}_on`;
+  const offName = `${pinName}_off`;
+  const onFunc  = window[onName];
+  const offFunc = window[offName];
+  if (typeof onFunc === 'function') {
+    onFunc();
+    console.log(`Triggering ${onName}`);
+    if (typeof offFunc === 'function') {
+      setTimeout(offFunc, 500);
+      console.log(`Triggering ${offName}`);
+    }
+  }
+}
