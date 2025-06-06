@@ -16,15 +16,275 @@
     <div id="hitContainer"></div>
     <div id="wrongOverlay"></div>
 
-    <div id="section0"
-        style="width:100%; height:100dvh; display: flex; justify-content: center; align-items: center; color: red; font-size: 40px;">
+    <div id="section0" class="section" style="display: flex;color: red; font-size: 40px;">
         정상적인 초기화를 위해 화면을 터치해 주세요
     </div>
 
+    <div id="section1" class="section">
+        <div style="width: 50%; position: relative;">
+            <img id="section1_left" src="./img/posmain.png" alt="posmain" style="width: 100%;" />
+        </div>
+        <div
+            style="width: 50%; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            <div style="display: flex; justify-content: center; align-items: center; width: 100%;">
+                <div
+                    style="width: 30%; position: relative; display: flex; align-items: center; justify-content: center;">
+                    <video id="profile" style="width: 100%; position: absolute; display: none;" autoplay muted>
+                        <source src="./img/video/profile.mp4" type="video/mp4">
+                    </video>
+                    <img id='logo' src="./img/NERC_logo_skyblue_deep.png" alt="NERC_logo_skyblue_deep"
+                        style="width: 100%;" />
+                </div>
+                <div style="width: 30%;">
+                    <video id="loading" style="width: 100%; display: none;" autoplay muted loop>
+                        <source src="./img/video/loading_start.mp4" type="video/mp4">
+                    </video>
+                </div>
+                <div style="width: 40%;">
+                    <video id="footprint_hint" style="width: 100%; display: none;" autoplay muted>
+                        <source src="./img/video/02_Footprint/footprint_hint(0).mp4" type="video/mp4">
+                    </video>
+
+                </div>
+            </div>
+            <div
+                style="width: 50%; height: 10dvh; overflow: hidden; display: flex; align-items: center; position: relative;">
+                <video id="footprint_textbox" style="width: 100%; display: none; position: absolute;" autoplay muted
+                    loop>
+                    <source src="./img/video/textbox_start.mp4" type="video/mp4">
+                </video>
+            </div>
+        </div>
+    </div>
+
     <script>
+
+        let pin22Activated = false;
+        let pin23Activated = false;
+        let pin24Activated = false;
+        let pin25Activated = false;
+        let isAfterNarration1 = false;
+        let pin26Activated = false;
+        let pin27Activated = false;
+        let pin28Activated = false;
+        let pin29Activated = false;
+        let pin30Activated = false;
+        let pin31Activated = false;
+        let pin32Activated = false;
+        let pin33Activated = false;
+        let pin34Activated = false;
+
         const pinActions = {
             "barmega-1_pin_22": () => {
+                if (!pin22Activated) {
+                    pin22Activated = true;
+                    triggerPinOn('barmega-2_pin_23');
+                    if (pin22Activated && pin23Activated && pin24Activated) {
+                        triggerPinOnAndOff('barmega-2_pin_22');
+                    }
+                }
             },
+            "barmega-1_pin_23": () => {
+                if (!pin23Activated) {
+                    pin23Activated = true;
+                    triggerPinOn('barmega-2_pin_24');
+                    if (pin22Activated && pin23Activated && pin24Activated) {
+                        triggerPinOnAndOff('barmega-2_pin_22');
+                    }
+                }
+            },
+            "barmega-1_pin_24": () => {
+                if (!pin24Activated) {
+                    pin24Activated = true;
+                    triggerPinOn('barmega-2_pin_25');
+                    if (pin22Activated && pin23Activated && pin24Activated) {
+                        triggerPinOnAndOff('barmega-2_pin_22');
+                    }
+                }
+            },
+            "barmega-1_pin_25": () => {
+                if (!pin25Activated) {
+                    pin25Activated = true;
+                    $('#section1').css('display', 'flex');
+                    setTimeout(() => {
+                        new Audio('./sound/narration/narration1.ogg').play();
+                    }, 5000);
+                    setTimeout(() => {
+                        isAfterNarration1 = true;
+                        // narration1 끝나는 타이밍에 맞춰서 시간 조정
+                    }, 10000);
+                }
+            },
+            "barmega-1_pin_26": () => {
+                if (isAfterNarration1 && !pin26Activated) {
+                    pin26Activated = true;
+                    triggerPinOn('barmega-2_pin_26');
+                    new Audio('./sound/narration/narration2.ogg').play();
+                    $('#loading').css('display', 'block');
+                    setTimeout(() => {
+                        triggerPinOff('barmega-2_pin_32');
+                        triggerPinOff('barmega-2_pin_33');
+                        triggerPinOnAndOff('barmega-2_pin_35');
+                    }, 5000);
+                    setTimeout(() => {
+                        if (pin34Activated) return;
+                        $('#loading').attr('src', './img/video/loading_loop.mp4');
+                    }, 10000);
+                }
+            },
+            "barmega-1_pin_27": () => {
+                if (!pin27Activated) {
+                    pin27Activated = true;
+                    triggerPinOn('barmega-2_pin_28');
+                    triggerPinOff('barmega-2_pin_31');
+                    triggerPinOff('barmega-2_pin_34');
+                    new Audio('./sound/narration/narration4.ogg').play();
+                    setTimeout(() => {
+                        triggerPinOff('barmega-2_pin_32');
+                        triggerPinOff('barmega-2_pin_33');
+                        $('#footprint_textbox').attr('src', './img/video/footprint_textbox_start.mp4');
+                        $('#footprint_textbox').css('display', 'block');
+                        // narration4 끝나는 타이밍에 맞춰서 시간 조정
+                    }, 10000);
+                    setTimeout(() => {
+                        $('#footprint_textbox').attr('src', './img/video/footprint_textbox_loop.mp4');
+                        $('#footprint_hint').css('display', 'block');
+                    }, 20000);
+                    setTimeout(() => {
+                        triggerPinOn('barmega-2_pin_32');
+                        triggerPinOn('barmega-2_pin_33');
+                    }, 30000);
+                }
+            },
+            "barmega-1_pin_28": () => {
+                if (!pin28Activated) {
+                    pin28Activated = true;
+                    new Audio('./sound/narration/narration5.ogg').play();
+                    $('#footprint_textbox').css('display', 'none');
+                    $('#footprint_hint').css('display', 'none');
+                    setTimeout(() => {
+                        $('#footprint_textbox').attr('src', './img/video/datauploading.mp4');
+                        $('#footprint_textbox').css('display', 'block');
+                    }, 1000);
+                    setTimeout(() => {
+                        $('#footprint_textbox').css('display', 'none');
+                        $('#footprint_hint').attr('src', './img/video/virus_footprint.mp4');
+                        $('#footprint_hint').css('display', 'block');
+                    }, 6000);
+                    setTimeout(() => {
+                        new Audio('./sound/narration/narration6.ogg').play();
+                        $('#footprint_textbox').attr('src', './img/video/textbox.mp4');
+                        $('#footprint_textbox').removeAttr('loop');
+                        $('#footprint_textbox').css('display', 'block');
+                    }, 21000);
+                    setTimeout(() => {
+                        $('#footprint_hint').attr('src', './img/video/redpoint.mp4');
+                        new Audio('./sound/narration/narration7.ogg').play();
+                    }, 42000);
+                    setTimeout(() => {
+                        triggerPinOn('barmega-2_pin_29');
+                        triggerPinOn('barmega-2_pin_30');
+                        triggerPinOn('barmega-2_pin_32');
+                        triggerPinOn('barmega-2_pin_33');
+                        // narration7 끝나는 타이밍에 맞춰서 시간 조정
+                    }, 52000);
+                }
+            },
+            "barmega-1_pin_29": () => {
+                if (!pin29Activated) {
+                    pin29Activated = true;
+                    new Audio('./sound/narration/narration8.ogg').play();
+                    triggerPinOff('barmega-2_pin_32');
+                    triggerPinOff('barmega-2_pin_33');
+                    $('#logo').css('display', 'none');
+                    // cctv 재생?
+                    $('#profile').css('display', 'block');
+                    setTimeout(() => {
+                        $('#footprint_hint').css('display', 'none');
+                        new Audio('./sound/narration/narration9.ogg').play();
+                        triggerPinOn('barmega-2_pin_32');
+                        triggerPinOn('barmega-2_pin_33');
+                    }, 30000);
+                    setTimeout(() => {
+                        triggerPinOnAndOff('barmega-2_pin_37');
+                    }, 33000);
+                }
+            },
+            "barmega-1_pin_30": () => {
+                if (!pin30Activated) {
+                    pin30Activated = true;
+                    triggerPinOnAndOff('barmega-2_pin_27');
+                    setTimeout(() => {
+                        new Audio('./sound/narration/narration10.ogg').play();
+                    }, 7000);
+                }
+            },
+            "barmega-1_pin_31": () => {
+                if (!pin31Activated) {
+                    pin31Activated = true;
+                    triggerPinOff('barmega-2_pin_26');
+                    triggerPinOn('barmega-2_pin_28');
+                    triggerPinOnAndOff('barmega-2_pin_40');
+                    setTimeout(() => {
+                        new Audio('./sound/narration/narration11.ogg').play();
+                    }, 5000);
+                }
+            },
+            "barmega-1_pin_32": () => {
+                if (!pin32Activated) {
+                    pin32Activated = true;
+                    triggerPinOnAndOff('barmega-2_pin_39');
+                    triggerPinOnAndOff('barmega-2_pin_41');
+                    triggerPinOff('barmega-2_pin_22');
+                    triggerPinOff('barmega-2_pin_23');
+                    triggerPinOff('barmega-2_pin_24');
+                    triggerPinOff('barmega-2_pin_25');
+                    triggerPinOff('barmega-2_pin_26');
+                    triggerPinOff('barmega-2_pin_27');
+                    triggerPinOff('barmega-2_pin_28');
+                    triggerPinOff('barmega-2_pin_29');
+                    triggerPinOff('barmega-2_pin_30');
+                    triggerPinOff('barmega-2_pin_31');
+                    triggerPinOff('barmega-2_pin_32');
+                    triggerPinOff('barmega-2_pin_33');
+                    triggerPinOff('barmega-2_pin_34');
+                    triggerPinOff('barmega-2_pin_35');
+                    triggerPinOff('barmega-2_pin_36');
+                    triggerPinOff('barmega-2_pin_37');
+                    triggerPinOff('barmega-2_pin_38');
+                    triggerPinOff('barmega-2_pin_40');
+                    triggerPinOff('barmega-2_pin_41');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+                }
+            },
+            "barmega-1_pin_33": () => {
+                if (!pin33Activated) {
+                    pin33Activated = true;
+                    triggerPinOn('barmega-2_pin_32');
+                    triggerPinOn('barmega-2_pin_33');
+                }
+            },
+            "barmega-1_pin_34": () => {
+                if (!pin34Activated) {
+                    pin34Activated = true;
+                    $('#footprint_textbox').css('display', 'block');
+                    setTimeout(() => {
+                        $('#footprint_textbox').attr('src', './img/video/textbox_loop.mp4');
+                    }, 10000);
+                    new Audio('./sound/narration/narration3.ogg').play();
+                    triggerPinOn('barmega-2_pin_36');
+                    setTimeout(() => {
+                        $('#footprint_textbox').css('display', 'none');
+                        triggerPinOn('barmega-2_pin_31');
+                        triggerPinOn('barmega-2_pin_32');
+                        triggerPinOn('barmega-2_pin_33');
+                        triggerPinOn('barmega-2_pin_34');
+                        // narration3 끝나는 타이밍에 맞춰서 시간 조정
+                    }, 13000);
+                }
+            }
         };
 
         function updatePinDisplay(pinIdentifier) {
