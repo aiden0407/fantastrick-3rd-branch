@@ -38,6 +38,10 @@ body {
     align-items: center;
     /* background-color: #305C6D; */
     background-image: url('./img/back_ground.jpg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-attachment: fixed;
+    background-size: cover;
     position: relative;
 }
 

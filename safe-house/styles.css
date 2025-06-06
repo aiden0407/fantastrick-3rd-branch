@@ -1,5 +1,9 @@
 body {
-    background-color: black;
+    background-image: url('./img/background.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-attachment: fixed;
+    background-size: cover;
     margin: 0;
     padding: 0;
     overflow: hidden;
@@ -11,6 +15,5 @@ body {
     display: none;
     justify-content: center;
     align-items: center;
-    background-image: url('./img/background.png');
     position: relative;
 }
