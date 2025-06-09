@@ -1,7 +1,7 @@
 .play-area {
     position: relative;
     display: flex;
-    width: 71.6%;
+    width: 67.5%;
     gap: 40px;
 }
 
@@ -10,7 +10,7 @@
     display: flex;
     justify-content: center;
     flex-direction: column;
-    aspect-ratio: 100/101;
+    aspect-ratio: 200/197;
     overflow: hidden;
     align-items: center;
     width: 33.3333%;
