@@ -223,6 +223,7 @@
     let is32On = false;
     let isShooting = false;
     let isPasswordEntered = false;
+    let pin28Activated = false;
 
     const pinActions = {
       "ATMmega-1_pin_22": () => {
@@ -258,13 +259,16 @@
         }
       },
       "ATMmega-1_pin_28": () => {
-        triggerPinOff('ATMmega-1_pin_31');
-        triggerPinOff('ATMmega-1_pin_32');
-        triggerPinOff('ATMmega-1_pin_33');
-        triggerPinOff('ATMmega-1_pin_34');
-        setTimeout(() => {
-          location.reload();
-        }, 2000);
+        if (!pin28Activated) {
+          pin28Activated = true;
+          triggerPinOff('ATMmega-1_pin_31');
+          triggerPinOff('ATMmega-1_pin_32');
+          triggerPinOff('ATMmega-1_pin_33');
+          triggerPinOff('ATMmega-1_pin_34');
+          setTimeout(() => {
+            location.reload();
+          }, 2000);
+        }
       }
     };
 

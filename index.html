@@ -61,13 +61,13 @@
 
     <!-- ATM-Broken -->
     <section>
-        <h2>ATM-Broken (ATMuno-1) Read 핀</h2>
-        <div class="pin-toggle">Pin 12: <button id="b12">OFF</button></div>
-        <div class="pin-toggle">Pin 11: <button id="b11">OFF</button></div>
-        <div class="pin-toggle">Pin 10: <button id="b10">OFF</button></div>
-        <div class="pin-toggle">Pin 9: <button id="b9">OFF</button></div>
-        <div class="pin-toggle">Pin 8: <button id="b8">OFF</button></div>
-        <div class="pin-toggle">Pin 7: <button id="b7">OFF</button></div>
+        <h2>ATM-Broken (ATMmega-2) Read 핀</h2>
+        <div class="pin-toggle">Pin 22: <button id="b22">OFF</button></div>
+        <div class="pin-toggle">Pin 23: <button id="b23">OFF</button></div>
+        <div class="pin-toggle">Pin 24: <button id="b24">OFF</button></div>
+        <div class="pin-toggle">Pin 25: <button id="b25">OFF</button></div>
+        <div class="pin-toggle">Pin 26: <button id="b26">OFF</button></div>
+        <div class="pin-toggle">Pin 27: <button id="b27">OFF</button></div>
     </section>
 
     <!-- electric-shop -->
@@ -87,6 +87,10 @@
         <div class="pin-toggle">Pin 33: <button id="e33">OFF</button></div>
         <div class="pin-toggle">Pin 34: <button id="e34">OFF</button></div>
         <div class="pin-toggle">Pin 35: <button id="e35">OFF</button></div>
+        <div class="pin-toggle">Pin 36: <button id="e36">OFF</button></div>
+        <div class="pin-toggle">Pin 37: <button id="e37">OFF</button></div>
+        <div class="pin-toggle">Pin 38: <button id="e38">OFF</button></div>
+        <div class="pin-toggle">Pin 39: <button id="e39">OFF</button></div>
         <div class="pin-toggle">Pin 40: <button id="e40">OFF</button></div>
         <div class="pin-toggle">Pin 41: <button id="e41">OFF</button></div>
     </section>
@@ -157,8 +161,8 @@
     <script>
         const channel = new BroadcastChannel('arduino_channel');
         const stateNormal = { 22: 'off', 23: 'off', 24: 'off', 25: 'off', 26: 'off', 27: 'off', 28: 'off' };
-        const stateBroken = { 12: 'off', 11: 'off', 10: 'off', 9: 'off', 8: 'off', 7: 'off' };
-        const stateElecttronic = { 22: 'off', 23: 'off', 24: 'off', 25: 'off', 26: 'off', 27: 'off', 28: 'off', 29: 'off', 30: 'off', 31: 'off', 32: 'off', 33: 'off', 34: 'off', 35: 'off', 40: 'off', 41: 'off' };
+        const stateBroken = { 22: 'off', 23: 'off', 24: 'off', 25: 'off', 26: 'off', 27: 'off' };
+        const stateElecttronic = { 22: 'off', 23: 'off', 24: 'off', 25: 'off', 26: 'off', 27: 'off', 28: 'off', 29: 'off', 30: 'off', 31: 'off', 32: 'off', 33: 'off', 34: 'off', 35: 'off', 36: 'off', 37: 'off', 38: 'off', 39: 'off', 40: 'off', 41: 'off' };
         const stateDisinfecting = { 22: 'off', 23: 'off', 24: 'off', 25: 'off', 26: 'off', 27: 'off', 28: 'off', 29: 'off', 30: 'off', 31: 'off', 32: 'off', 33: 'off', 34: 'off', 35: 'off', 36: 'off' };
         const stateSafe = { 22: 'off', 24: 'off', 25: 'off', 26: 'off', 27: 'off', 28: 'off', 29: 'off', 30: 'off', 31: 'off' };
         const stateBar = { 22: 'off', 23: 'off', 24: 'off', 25: 'off', 26: 'off', 27: 'off', 28: 'off', 29: 'off', 30: 'off', 31: 'off', 32: 'off', 33: 'off', 34: 'off' };
@@ -195,7 +199,7 @@
                 type: 'slaveUpdate',
                 arduinos: [
                     { arduinoID: 'ATMmega-1', pins: pinsN },
-                    { arduinoID: 'ATMuno-1', pins: pinsB },
+                    { arduinoID: 'ATMmega-2', pins: pinsB },
                     { arduinoID: 'SLOTmega-2', pins: pinsE },
                     { arduinoID: 'disinfectmega-2', pins: pinsD },
                     { arduinoID: 'safemega-1', pins: pinsS },
@@ -218,8 +222,8 @@
         }
 
         bindButtons('n', stateNormal, [22, 23, 24, 25, 26, 27, 28]);
-        bindButtons('b', stateBroken, [12, 11, 10, 9, 8, 7]);
-        bindButtons('e', stateElecttronic, [22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 40, 41]);
+        bindButtons('b', stateBroken, [22, 23, 24, 25, 26, 27]);
+        bindButtons('e', stateElecttronic, [22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41]);
         bindButtons('d', stateDisinfecting, [22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36]);
         bindButtons('s', stateSafe, [22, 24, 25, 26, 27, 28, 29, 30, 31]);
         bindButtons('v', stateBar, [22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34]);
@@ -227,9 +231,9 @@
         // Front 로부터 오는 제어 메시지 로깅
         channel.onmessage = ev => {
             const d = ev.data;
-            if ((d.arduinoID === 'ATMmega-1' || d.arduinoID === 'ATMuno-1' || d.arduinoID === 'SLOTmega-2') && d.command) {
-                // log(`← 제어: [${d.arduinoID}] pin ${d.pin} → ${d.command}`);
-            }
+            // if ((d.arduinoID === 'ATMmega-1' || d.arduinoID === 'ATMmega-2' || d.arduinoID === 'SLOTmega-2' || d.arduinoID === 'disinfectmega-2' || d.arduinoID === 'safemega-1' || d.arduinoID === 'barmega-1') && d.command) {
+            //     log(`← 제어: [${d.arduinoID}] pin ${d.pin} → ${d.command}`);
+            // }
         };
 
         window.addEventListener('DOMContentLoaded', () => {
