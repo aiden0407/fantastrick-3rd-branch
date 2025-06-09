@@ -25,12 +25,12 @@
             <img id="section1_left" src="./img/posmain.png" alt="posmain" style="width: 100%;" />
         </div>
         <div
-            style="width: 50%; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            style="width: 50%; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 50px;">
             <div style="display: flex; justify-content: center; align-items: center; width: 100%;">
                 <div
                     style="width: 30%; position: relative; display: flex; align-items: center; justify-content: center;">
-                    <video id="profile" style="width: 100%; position: absolute; display: none;" autoplay muted>
-                        <source src="./img/video/profile.mp4" type="video/mp4">
+                    <video id="CCTV" style="width: 100%; position: absolute; display: none;" autoplay muted>
+                        <source src="./img/video/CCTV.mp4" type="video/mp4">
                     </video>
                     <img id='logo' src="./img/NERC_logo_skyblue_deep.png" alt="NERC_logo_skyblue_deep"
                         style="width: 100%;" />
@@ -42,7 +42,7 @@
                 </div>
                 <div style="width: 40%;">
                     <video id="footprint_hint" style="width: 100%; display: none;" autoplay muted>
-                        <source src="./img/video/02_Footprint/footprint_hint(0).mp4" type="video/mp4">
+                        <source src="./img/video/video/footprint.mp4" type="video/mp4">
                     </video>
 
                 </div>
@@ -58,6 +58,8 @@
     </div>
 
     <script>
+        const bgm = new Audio('./sound/BGM.mp3');
+        bgm.loop = true;
 
         let pin22Activated = false;
         let pin23Activated = false;
@@ -73,6 +75,7 @@
         let pin32Activated = false;
         let pin33Activated = false;
         let pin34Activated = false;
+        let isAfterNarration3 = false;
 
         const pinActions = {
             "barmega-1_pin_22": () => {
@@ -105,6 +108,7 @@
             "barmega-1_pin_25": () => {
                 if (!pin25Activated) {
                     pin25Activated = true;
+                    bgm.play();
                     $('#section1').css('display', 'flex');
                     setTimeout(() => {
                         new Audio('./sound/narration/narration1.ogg').play();
@@ -116,26 +120,24 @@
                 }
             },
             "barmega-1_pin_26": () => {
-                if (isAfterNarration1 && !pin26Activated) {
+                if (!pin26Activated) {
                     pin26Activated = true;
-                    triggerPinOn('barmega-2_pin_26');
-                    new Audio('./sound/narration/narration2.ogg').play();
-                    $('#loading').css('display', 'block');
-                    setTimeout(() => {
-                        triggerPinOff('barmega-2_pin_32');
-                        triggerPinOff('barmega-2_pin_33');
-                        triggerPinOnAndOff('barmega-2_pin_35');
-                    }, 5000);
-                    setTimeout(() => {
-                        if (pin34Activated) return;
-                        $('#loading').attr('src', './img/video/loading_loop.mp4');
-                    }, 10000);
+                    if (isAfterNarration1) {
+                        doAfterNarration1();
+                    } else {
+                        const checkTimer = setInterval(() => {
+                            if (isAfterNarration1) {
+                                clearInterval(checkTimer);
+                                doAfterNarration1();
+                            }
+                        }, 1000);
+                    }
                 }
             },
             "barmega-1_pin_27": () => {
-                if (!pin27Activated) {
+                if (isAfterNarration3 && !pin27Activated) {
                     pin27Activated = true;
-                    triggerPinOn('barmega-2_pin_28');
+                    triggerPinOn('barmega-2_pin_38');
                     triggerPinOff('barmega-2_pin_31');
                     triggerPinOff('barmega-2_pin_34');
                     new Audio('./sound/narration/narration4.ogg').play();
@@ -197,17 +199,19 @@
                     triggerPinOff('barmega-2_pin_32');
                     triggerPinOff('barmega-2_pin_33');
                     $('#logo').css('display', 'none');
-                    // cctv 재생?
-                    $('#profile').css('display', 'block');
+                    $('#CCTV').css('display', 'block');
+                    setTimeout(() => {
+                        $('#CCTV').attr('src', './img/video/profile.mp4');
+                    }, 52000);
                     setTimeout(() => {
                         $('#footprint_hint').css('display', 'none');
                         new Audio('./sound/narration/narration9.ogg').play();
                         triggerPinOn('barmega-2_pin_32');
                         triggerPinOn('barmega-2_pin_33');
-                    }, 30000);
+                    }, 82000);
                     setTimeout(() => {
                         triggerPinOnAndOff('barmega-2_pin_37');
-                    }, 33000);
+                    }, 85000);
                 }
             },
             "barmega-1_pin_30": () => {
@@ -220,7 +224,7 @@
                 }
             },
             "barmega-1_pin_31": () => {
-                if (!pin31Activated) {
+                if (pin30Activated && !pin31Activated) {
                     pin31Activated = true;
                     triggerPinOff('barmega-2_pin_26');
                     triggerPinOn('barmega-2_pin_28');
@@ -256,7 +260,7 @@
                     triggerPinOff('barmega-2_pin_41');
                     setTimeout(() => {
                         location.reload();
-                    }, 1000);
+                    }, 5000);
                 }
             },
             "barmega-1_pin_33": () => {
@@ -281,6 +285,7 @@
                         triggerPinOn('barmega-2_pin_32');
                         triggerPinOn('barmega-2_pin_33');
                         triggerPinOn('barmega-2_pin_34');
+                        isAfterNarration3 = true;
                         // narration3 끝나는 타이밍에 맞춰서 시간 조정
                     }, 13000);
                 }
@@ -298,6 +303,21 @@
         $('#section0').click(function () {
             section0.style.display = "none";
         });
+
+        function doAfterNarration1() {
+            triggerPinOn('barmega-2_pin_26');
+            new Audio('./sound/narration/narration2.ogg').play();
+            $('#loading').css('display', 'block');
+            setTimeout(() => {
+                triggerPinOff('barmega-2_pin_32');
+                triggerPinOff('barmega-2_pin_33');
+                triggerPinOnAndOff('barmega-2_pin_35');
+            }, 5000);
+            setTimeout(() => {
+                if (pin34Activated) return;
+                $('#loading').attr('src', './img/video/loading_loop.mp4');
+            }, 10000);
+        }
     </script>
 
     <script src="../script.js"></script>
