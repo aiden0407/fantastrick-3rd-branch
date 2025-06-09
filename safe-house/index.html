@@ -42,7 +42,10 @@
         bgm.loop = true;
 
         let pin22Activated = false;
+        let pin24Activated1 = false;
+        let pin24Activated2 = false;
         let pin25Activated = false;
+        let isAfterPin25 = false;
         let pin26Activated = false;
         let pin27Activated = false;
         let get24 = false;
@@ -51,6 +54,7 @@
         let pin29Activated = false;
         let isAfterNews = false;
         let pin30Activated = false;
+        let pin31Activated = false;
 
         const pinActions = {
             "safemega-1_pin_22": () => {
@@ -62,36 +66,56 @@
                 }
             },
             "safemega-1_pin_24": () => {
-                triggerPinOn('safemega-1_pin_33');
-                setTimeout(() => {
-                    triggerPinOff('safemega-1_pin_33');
-                }, 10000);
+                if (!pin24Activated1 && get24) {
+                    pin24Activated1 = true;
+                    triggerPinOn('safemega-1_pin_33');
+                }
+
+                if (pin28Activated && !pin24Activated2) {
+                    pin24Activated2 = true;
+                    triggerPinOn('safemega-1_pin_33');
+                    setTimeout(() => {
+                        $('#section1_left').attr('src', './img/safehouse base page_single.gif');
+                        $('#textbox1').attr('src', './img/textbox3.png');
+                        $("#textbox1").delay(500).fadeIn(1000);
+                        new Audio('./sound/effect/logon.ogg').play();
+                        setTimeout(() => {
+                            new Audio('./sound/narration/narration4.ogg').play();
+                        }, 3000);
+                        setTimeout(() => {
+                            isAfterNarration4 = true;
+                            // 3000 + narration4 끝나는 타이밍에 맞춰서 시간 조정
+                        }, 13000);
+                    }, 60000);
+                }
             },
             "safemega-1_pin_25": () => {
                 if (!pin25Activated) {
                     pin25Activated = true;
-                    new Audio('./sound/effect/logon.mp3').play();
-                    new Audio('./sound/narration/narration1.ogg').play();
+                    new Audio('./sound/effect/logon.ogg').play();
+                    setTimeout(() => {
+                        new Audio('./sound/narration/narration1.ogg').play();
+                    }, 3000);
                     $('#section1_left').attr('src', './img/safehouse base page_single.gif');
-                    $('#textbox1').css('display', 'block');
+                    $("#textbox1").delay(500).fadeIn(1000);
                     setTimeout(() => {
                         triggerPinOn('safemega-1_pin_34');
-                        // narration1 끝나는 타이밍에 맞춰서 시간 조정
-                    }, 5000);
-                }
-            },
-            "safemega-1_pin_26": () => {
-                if (!pin26Activated) {
-                    pin26Activated = true;
-                    new Audio('./sound/effect/complete.mp3').play();
-                    new Audio('./sound/narration/narration2.ogg').play();
-                    $('#textbox1').attr('src', './img/textbox2.png');
-                    $('#agentpic').css('display', 'block');
-
+                        // 3000 + narration1 끝나는 타이밍에 맞춰서 시간 조정
+                    }, 13000);
+                    setTimeout(() => {
+                        new Audio('./sound/effect/complete.mp3').play();
+                        $('#textbox1').attr('src', './img/textbox2.png');
+                        $("#agentpic").fadeIn(1000);
+                        // 3000 + narration1 + 5000 끝나는 타이밍에 맞춰서 시간 조정
+                    }, 18000);
+                    setTimeout(() => {
+                        new Audio('./sound/narration/narration2.ogg').play();
+                        isAfterPin25 = true;
+                    }, 19000);
                 }
             },
             "safemega-1_pin_27": () => {
-                if (!pin27Activated) {
+                if (isAfterPin25 && !pin27Activated) {
                     pin27Activated = true;
                     new Audio('./sound/narration/narration3.ogg').play();
                     triggerPinOn('safemega-1_pin_33');
@@ -108,17 +132,11 @@
                 }
             },
             "safemega-1_pin_28": () => {
-                if (!pin28Activated && get24) {
+                if (!pin28Activated && pin24Activated1) {
                     pin28Activated = true;
+                    triggerPinOn('safemega-1_pin_33');
                     new Audio('./sound/effect/complete.mp3').play();
                     $('#section1_right').attr('src', './img/d2_cctv_assem.gif');
-                    setTimeout(() => {
-                        $('#section1_left').attr('src', './img/safehouse base page_single.gif');
-                        $('#textbox1').attr('src', './img/textbox3.png');
-                        $('#textbox1').css('display', 'block');
-                        new Audio('./sound/narration/narration4.ogg').play();
-                        isAfterNarration4 = true;
-                    }, 60000);
                 }
             },
             "safemega-1_pin_29": () => {
@@ -146,13 +164,15 @@
                 }
             },
             "safemega-1_pin_31": () => {
-                triggerPinOnAndOff('safemega-1_pin_32');
-                triggerPinOff('safemega-1_pin_33');
-                triggerPinOff('safemega-1_pin_34');
-                triggerPinOff('safemega-1_pin_35');
-                setTimeout(() => {
-                    location.reload();
-                }, 1000);
+                if (!pin31Activated && isAfterNews) {
+                    triggerPinOnAndOff('safemega-1_pin_32');
+                    triggerPinOff('safemega-1_pin_33');
+                    triggerPinOff('safemega-1_pin_34');
+                    triggerPinOff('safemega-1_pin_35');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                }
             },
         };
 
