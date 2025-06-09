@@ -3,6 +3,11 @@
     src: url('LAB_Digital.ttf') format('truetype');
 }
 
+@font-face {
+    font-family: 'apple-sd-gothic-neo-regular';
+    src: url('apple-sd-gothic-neo-regular.otf') format('opentype');
+}
+
 body {
     background-color: black;
     margin: 0;

@@ -6,6 +6,7 @@
 }
 
 .play-area .reel-container {
+    font-family: "apple-sd-gothic-neo-regular";
     user-select: none;
     display: flex;
     justify-content: center;
