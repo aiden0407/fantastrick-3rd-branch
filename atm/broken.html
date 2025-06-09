@@ -113,40 +113,37 @@
   </div>
 
   <script>
-    let pin12Activated = false;
+    let pin22Activated = false;
+    let pin26Activated = false;
+    let is32On = false;
+    let isShooting = false;
     let isSection1Clicked = false;
     let isPasswordEntered = false;
 
     const pinActions = {
-      "ATMuno-1_pin_12": () => {
-        if (!pin12Activated) {
-          pin12Activated = true;
+      "ATMmega-2_pin_22": () => {
+        if (!pin22Activated) {
+          pin22Activated = true;
           document.body.style.backgroundImage = "url('./img/bg.png')";
           section1.style.display = "block";
         }
       },
-      "ATMuno-1_pin_9": () => handleHit(),
-      "ATMuno-1_pin_10": () => handleHit(),
-      "ATMuno-1_pin_11": () => handleHit(),
-      "ATMuno-1_pin_8": () => {
-        // showHitEffect();
-        if (typeof window['ATMuno-1_pin_3_on'] === 'function') {
-          window['ATMuno-1_pin_3_on']();
+      "ATMmega-2_pin_23": () => handleHit(),
+      "ATMmega-2_pin_24": () => handleHit(),
+      "ATMmega-2_pin_25": () => handleHit(),
+      "ATMmega-2_pin_26": () => {
+        if (!pin26Activated) {
+          pin26Activated = true;
+          triggerPinOn('ATMmega-2_pin_31');
         }
       },
-      "ATMuno-1_pin_7": () => {
-        if (typeof window['ATMuno-1_pin_3_off'] === 'function') {
-          window['ATMuno-1_pin_3_off']();
-        }
-        if (typeof window['ATMuno-1_pin_4_off'] === 'function') {
-          window['ATMuno-1_pin_4_off']();
-        }
-        if (typeof window['ATMuno-1_pin_5_off'] === 'function') {
-          window['ATMuno-1_pin_5_off']();
-        }
+      "ATMmega-2_pin_27": () => {
+        triggerPinOff('ATMmega-2_pin_31');
+        triggerPinOff('ATMmega-2_pin_32');
+        triggerPinOff('ATMmega-2_pin_33');
         setTimeout(() => {
           location.reload();
-        }, 1000);
+        }, 2000);
       }
     };
 
@@ -179,23 +176,22 @@
     }
 
     function handleHit() {
-      // showHitEffect();
-      if (typeof window['ATMuno-1_pin_5_on'] === 'function') {
-        window['ATMuno-1_pin_5_on']();
-        setTimeout(() => {
-          if (typeof window['ATMuno-1_pin_5_off'] === 'function') {
-            window['ATMuno-1_pin_5_off']();
-          }
-        }, 2000);
-      }
+      if (isShooting) return;
+      isShooting = true;
+      triggerPinOn('ATMmega-2_pin_33');
+      setTimeout(() => {
+        triggerPinOff('ATMmega-2_pin_33');
+        isShooting = false;
+      }, 2000);
 
-      if (typeof window['ATMuno-1_pin_4_on'] === 'function') {
-        window['ATMuno-1_pin_4_on']();
+      if (!is32On) {
+        is32On = true;
+        triggerPinOn('ATMmega-2_pin_32');
       }
     }
 
     $(document).keydown(function (evt) {
-      if (evt.keyCode === 107) {
+      if (evt.keyCode === 107 || evt.keyCode === 187) {
         showHitEffect();
       }
     });

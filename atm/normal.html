@@ -185,7 +185,7 @@
   <div id="section3" style="width:100%; height:100%; z-index:1; position:fixed;">
     <div id="progressContainer" style="
            position:absolute;
-           bottom:250px;
+           bottom:220px;
            left:50%;
            transform:translateX(-50%);
            width:80%;
@@ -199,7 +199,7 @@
     </div>
     <div id="progressText" style="
            position:absolute;
-           bottom:300px;
+           bottom:270px;
            left:50%;
            transform:translateX(-50%);
            color:#0f0;
@@ -210,28 +210,24 @@
     </div>
 
     <div id="system" class="animated-delay zoomIn"
-      style="color:black; border-radius: 25px; text-align:center; background:#0f0; width:520px; padding:4px; z-index:20; position:fixed; bottom: 150px; left: 50%; margin: 0 0 0 -260px; font-size:40px;">
+      style="color:black; border-radius: 25px; text-align:center; background:#0f0; width:520px; padding:4px; z-index:20; position:fixed; bottom: 120px; left: 50%; margin: 0 0 0 -260px; font-size:40px;">
       Security Unlock Successful
     </div>
   </div>
 
   <script>
     let pin22Activated = false;
+    let pin26Activated = false;
     let isSection1Clicked = false;
     let pin27Activated = false;
-    let pin32Activated = false;
+    let is32On = false;
+    let isShooting = false;
     let isPasswordEntered = false;
 
     const pinActions = {
       "ATMmega-1_pin_22": () => {
         if (!pin22Activated) {
           pin22Activated = true;
-          // if (typeof window['ATMmega-1_pin_35_on'] === 'function') {
-          //   window['ATMmega-1_pin_35_on']();
-          //   setTimeout(() => {
-          //     window['ATMmega-1_pin_35_off']();
-          //   }, 500);
-          // }
           document.body.style.backgroundImage = "url('./img/bg.png')";
           section1.style.display = "block";
         }
@@ -240,9 +236,9 @@
       "ATMmega-1_pin_24": () => handleHit(),
       "ATMmega-1_pin_25": () => handleHit(),
       "ATMmega-1_pin_26": () => {
-        // showHitEffect();
-        if (typeof window['ATMmega-1_pin_31_on'] === 'function') {
-          window['ATMmega-1_pin_31_on']();
+        if (pin22Activated && !pin26Activated) {
+          pin26Activated = true;
+          triggerPinOn('ATMmega-1_pin_31');
         }
       },
       "ATMmega-1_pin_27": () => {
@@ -262,30 +258,13 @@
         }
       },
       "ATMmega-1_pin_28": () => {
-        if (typeof window['ATMmega-1_pin_36_on'] === 'function') {
-          window['ATMmega-1_pin_36_on']();
-          setTimeout(() => {
-            window['ATMmega-1_pin_36_off']();
-          }, 500);
-        }
-        if (typeof window['ATMmega-1_pin_31_off'] === 'function') {
-          window['ATMmega-1_pin_31_off']();
-        }
-        if (typeof window['ATMmega-1_pin_32_off'] === 'function') {
-          window['ATMmega-1_pin_32_off']();
-        }
-        if (typeof window['ATMmega-1_pin_33_off'] === 'function') {
-          window['ATMmega-1_pin_33_off']();
-        }
-        if (typeof window['ATMmega-1_pin_34_off'] === 'function') {
-          window['ATMmega-1_pin_34_off']();
-        }
-        if (typeof window['ATMmega-1_pin_35_off'] === 'function') {
-          window['ATMmega-1_pin_35_off']();
-        }
+        triggerPinOff('ATMmega-1_pin_31');
+        triggerPinOff('ATMmega-1_pin_32');
+        triggerPinOff('ATMmega-1_pin_33');
+        triggerPinOff('ATMmega-1_pin_34');
         setTimeout(() => {
           location.reload();
-        }, 1000);
+        }, 2000);
       }
     };
 
@@ -318,29 +297,22 @@
     }
 
     function handleHit() {
-      // showHitEffect();
-      if (typeof window['ATMmega-1_pin_33_on'] === 'function') {
-        window['ATMmega-1_pin_33_on']();
-        setTimeout(() => {
-          if (typeof window['ATMmega-1_pin_33_off'] === 'function') {
-            window['ATMmega-1_pin_33_off']();
-          }
-        }, 2000);
-      }
+      if (!pin22Activated && isShooting) return;
+      isShooting = true;
+      triggerPinOn('ATMmega-1_pin_33');
+      setTimeout(() => {
+        triggerPinOff('ATMmega-1_pin_33');
+        isShooting = false;
+      }, 2000);
 
-      if (!pin32Activated && typeof window['ATMmega-1_pin_32_on'] === 'function') {
-        window['ATMmega-1_pin_32_on']();
-        setTimeout(() => {
-          if (typeof window['ATMmega-1_pin_32_off'] === 'function') {
-            window['ATMmega-1_pin_32_off']();
-          }
-        }, 500);
-        pin32Activated = true;
+      if (!is32On) {
+        is32On = true;
+        triggerPinOnOff('ATMmega-1_pin_32');
       }
     }
 
     $(document).keydown(function (evt) {
-      if (evt.keyCode === 107) {
+      if (evt.keyCode === 107 || evt.keyCode === 187) {
         showHitEffect();
       }
     });
@@ -413,9 +385,7 @@
             setTimeout(() => {
               section2.style.display = "none";
               section3.style.display = "block";
-              if (typeof window['ATMmega-1_pin_34_on'] === 'function') {
-                window['ATMmega-1_pin_34_on']();
-              }
+              triggerPinOn('ATMmega-1_pin_34');
               $(function () {
                 const duration = 3000;
                 const startTime = Date.now();
@@ -454,8 +424,8 @@
 
     function showHackingPopup(keyId) {
       const elem = document.getElementById(keyId);
-      const x = Math.random() * (window.innerWidth - 600);
-      const y = Math.random() * (window.innerHeight - 200);
+      const x = Math.random() * (window.innerWidth - 800);
+      const y = Math.random() * (window.innerHeight - 300);
       elem.style.left = x + 'px';
       elem.style.top = y + 'px';
       elem.style.position = 'fixed';
