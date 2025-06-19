@@ -99,6 +99,7 @@ body {
 #section2-popup,
 #count-error-popup,
 #section3-normal-popup,
+#section3-normal-popup-confirm,
 #section3-rare-popup,
 #section3-rare-last-popup {
     position: fixed;

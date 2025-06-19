@@ -107,6 +107,20 @@
       </div>
     </div>
 
+    <div id="section3-normal-popup-confirm">
+      <div class="popup-content">
+        <img src="./img/popup_background.png" alt="popup_background" />
+        <p class="popup-text">
+          정말로 일반 등급 모듈을 <br />
+          제작 하시겠습니까?
+        </p>
+        <div class="popup-buttons">
+          <img id="normal-yes-btn-confirm" src="./img/YES_button.png" alt="YES_button" />
+          <img id="normal-no-btn-confirm" src="./img/NO_button.png" alt="NO_button" />
+        </div>
+      </div>
+    </div>
+
     <div id="section3-rare-popup">
       <div class="popup-content">
         <img src="./img/popup_background.png" alt="popup_background" />
@@ -673,11 +687,18 @@
 
     $('#normal-yes-btn').click(() => {
       hideElement('section3-normal-popup');
-      showFinalScreen();
-      triggerPinOnAndOff('SLOTmega-1_pin_36');
+      showElement('section3-normal-popup-confirm');
     });
     $('#normal-no-btn').click(() => {
       hideElement('section3-normal-popup');
+    });
+    $('#normal-yes-btn-confirm').click(() => {
+      hideElement('section3-normal-popup-confirm');
+      showFinalScreen();
+      triggerPinOnAndOff('SLOTmega-1_pin_36');
+    });
+    $('#normal-no-btn-confirm').click(() => {
+      hideElement('section3-normal-popup-confirm');
     });
     $('#rare-yes-btn').click(() => {
       hideElement('section3-rare-popup');
@@ -741,7 +762,7 @@
         document.getElementById('final-text').textContent = "제작완료\n시스템을 종료합니다.";
       }, 5000);
       setTimeout(() => {
-        bgm.pause();
+        fadeOutAudio(bgm, 180000);
         new Audio(`./sound/narration/narration3.ogg`).play();
       }, 10000);
     }
