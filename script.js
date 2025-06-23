@@ -204,3 +204,23 @@ function triggerPinOnAndOff(pinName) {
     }
   }
 }
+
+function fadeOutAudio(audio, duration) {
+  const startVolume = audio.volume;
+  const fadeSteps = 50;
+  const stepTime = duration / fadeSteps;
+  const volumeStep = startVolume / fadeSteps;
+
+  let currentStep = 0;
+  const fadeInterval = setInterval(() => {
+    currentStep++;
+    const newVol = Math.max(startVolume - volumeStep * currentStep, 0);
+    audio.volume = newVol;
+
+    if (currentStep >= fadeSteps) {
+      clearInterval(fadeInterval);
+      audio.pause();
+      audio.currentTime = 0;
+    }
+  }, stepTime);
+}
