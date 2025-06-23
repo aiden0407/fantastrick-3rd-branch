@@ -1,118 +1,94 @@
-// 디버그용 키보드 처리입니다. slave와 동일한 카드 ui를 생성합니다. 기본값 : ctrl + 키패드1
-document.addEventListener('keydown', (event) => {
-	if (event.ctrlKey && event.code === 'Numpad1') {
-		const container = document.getElementById('arduinoContainer');
-		container.style.display = container.style.display === 'block' ? 'none' : 'block';
-		event.preventDefault();
-	}
-});
-
-// BroadcastChannel 설정
+// BroadcastChannel 생성 (채널명: 'arduino_channel')
 const channel = new BroadcastChannel('arduino_channel');
 let lastSlaveMessageTime = Date.now();
-const RECONNECT_TIMEOUT = 5000;
-const pendingCommands = {};
+const RECONNECT_TIMEOUT = 5000; // 5초 이상 업데이트가 없으면 연결 끊김으로 간주
+
+// front.html에서 전송한 제어 명령에 대해 재전송 로직을 위한 pending 명령 저장소
+const pendingCommands = {}; // key: "arduinoID_pin", value: { command, intervalId }
+
+// slave로부터 받은 최신 전체 아두이노 정보 저장 (UI 갱신용)
 let slaveData = {};
 
-// read 핀 상태 갱신 (변경된 핀만)
-function updateMonitoredPins(changedPin = null) {
-  if (changedPin) {
-    console.log(`Updating single pin display: ${changedPin}`);
-    updatePinDisplay(changedPin);
-  } else {
-    console.log('Updating all monitored pins');
-    monitoredPins.forEach(updatePinDisplay);
-  }
-}
-
-// 아두이노 카드 생성
+// 아두이노 카드 UI 생성 함수 (slaveData 기반)
 function createArduinoCard(arduino) {
-  console.log(`Creating card for arduino: ${arduino.arduinoID}`);
-  const existingCard = document.querySelector(`.card[data-arduino-id="${arduino.arduinoID}"]`);
-  if (existingCard) return existingCard;
-
   const card = document.createElement('div');
   card.className = 'card';
   card.setAttribute('data-arduino-id', arduino.arduinoID);
-  
+
   const header = document.createElement('div');
   header.className = 'arduino-header';
   header.innerHTML = `<h3>${arduino.arduinoID}</h3>`;
   card.appendChild(header);
-  
+
   const pinsContainer = document.createElement('div');
   pinsContainer.className = 'pins';
-  
+
   arduino.pins.forEach(pin => {
     const pinDiv = document.createElement('div');
     pinDiv.className = 'pin';
+    // id 예: card-arduino-100-pin-4
     pinDiv.id = `card-${arduino.arduinoID}-pin-${pin.pin}`;
-    
+
     const pinText = document.createElement('span');
     pinText.className = 'pin-text';
     pinText.innerText = `Pin ${pin.pin} - ${pin.nickname} (${pin.mode})`;
-    
+
     const switchLabel = document.createElement('label');
     switchLabel.className = 'switch';
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
-    checkbox.checked = pin.state === 'on';
-    checkbox.disabled = pin.mode !== 'write';
-    
+    checkbox.checked = (pin.state === 'on');
+    // write 핀은 제어 가능하므로 disabled 속성을 제거
+    checkbox.disabled = (pin.mode !== 'write');
+
+    // read 핀인 경우 전역 변수에 자동으로 상태 저장
+    // 전역 변수명: arduino.arduinoID + "_pin_" + pin.pin (예: "arduino-100_pin_4")
     if (pin.mode === 'read') {
-      const globalVarName = `${arduino.arduinoID}_pin_${pin.pin}`;
-      window[globalVarName] = pin.state === 'on';
-      updateMonitoredPins(globalVarName);
+      let globalVarName = arduino.arduinoID + "_pin_" + pin.pin;
+      window[globalVarName] = checkbox.checked;
     }
-    
+
+    // write 핀인 경우 상태 변경 시 제어 명령 전송 및 글로벌 함수 생성 (on/off 분리)
     if (pin.mode === 'write') {
+      // 체크박스 change 이벤트 (직접 조작 시)
       checkbox.addEventListener('change', () => {
         const newState = checkbox.checked ? 'on' : 'off';
         const commandMsg = {
           arduinoID: arduino.arduinoID,
           pin: pin.pin,
-          state: newState,
-          command: newState // slave.html 호환성
+          command: newState
         };
-        console.log(`Checkbox changed: ${arduino.arduinoID}, Pin ${pin.pin}, State ${newState}`);
         sendCommandWithRetry(commandMsg);
       });
-      const funcNameOn = `${arduino.arduinoID}_pin_${pin.pin}_on`;
-      const funcNameOff = `${arduino.arduinoID}_pin_${pin.pin}_off`;
-      window[funcNameOn] = function() {
-        console.log(`Button clicked: ${funcNameOn}`);
-        const currentCheckbox = document.querySelector(`#card-${arduino.arduinoID}-pin-${pin.pin} input[type="checkbox"]`);
-        if (currentCheckbox) {
-          currentCheckbox.checked = true;
+      // 글로벌 함수 생성: on 함수와 off 함수 따로 생성
+      let funcNameOn = arduino.arduinoID + "_pin_" + pin.pin + "_on";
+      let funcNameOff = arduino.arduinoID + "_pin_" + pin.pin + "_off";
+      window[funcNameOn] = function () {
+        let checkbox = document.querySelector(`#card-${arduino.arduinoID}-pin-${pin.pin} input[type="checkbox"]`);
+        if (checkbox) {
+          checkbox.checked = true;
           const commandMsg = {
             arduinoID: arduino.arduinoID,
             pin: pin.pin,
-            state: 'on',
-            command: 'on' // slave.html 호환성
+            command: 'on'
           };
           sendCommandWithRetry(commandMsg);
-        } else {
-          console.error(`Checkbox not found for ${funcNameOn}`);
         }
-      };
-      window[funcNameOff] = function() {
-        console.log(`Button clicked: ${funcNameOff}`);
-        const currentCheckbox = document.querySelector(`#card-${arduino.arduinoID}-pin-${pin.pin} input[type="checkbox"]`);
-        if (currentCheckbox) {
-          currentCheckbox.checked = false;
+      }
+      window[funcNameOff] = function () {
+        let checkbox = document.querySelector(`#card-${arduino.arduinoID}-pin-${pin.pin} input[type="checkbox"]`);
+        if (checkbox) {
+          checkbox.checked = false;
           const commandMsg = {
             arduinoID: arduino.arduinoID,
             pin: pin.pin,
-            state: 'off',
-            command: 'off' // slave.html 호환성
+            command: 'off'
           };
           sendCommandWithRetry(commandMsg);
-        } else {
-          console.error(`Checkbox not found for ${funcNameOff}`);
         }
-      };
+      }
     }
-    
+
     switchLabel.appendChild(checkbox);
     pinDiv.appendChild(pinText);
     pinDiv.appendChild(switchLabel);
@@ -122,224 +98,109 @@ function createArduinoCard(arduino) {
   return card;
 }
 
-// 전체 UI 업데이트
+// 전체 아두이노 정보 업데이트 (slave.html에서 받은 데이터)
 function updateUI(data) {
-  console.log('Updating UI with data:', data);
   const container = document.getElementById('arduinoContainer');
-  const existingArduinoIDs = new Set(Array.from(container.querySelectorAll('.card')).map(card => card.getAttribute('data-arduino-id')));
-  
+  container.innerHTML = '';
   data.forEach(arduino => {
-    const existingArduino = slaveData[arduino.arduinoID];
-    if (existingArduino) {
-      const hasChanges = arduino.pins.some(pin => {
-        const existingPin = existingArduino.pins.find(p => p.pin === pin.pin);
-        return !existingPin || existingPin.state !== pin.state || existingPin.mode !== pin.mode || existingPin.nickname !== pin.nickname;
-      });
-      if (!hasChanges && existingArduino.arduinoNickname === arduino.arduinoNickname) {
-        console.log(`Skipped unchanged arduino: ${arduino.arduinoID}`);
-        return;
-      }
-    }
-    
-    slaveData[arduino.arduinoID] = JSON.parse(JSON.stringify(arduino));
-    if (!existingArduinoIDs.has(arduino.arduinoID)) {
-      const card = createArduinoCard(arduino);
-      container.appendChild(card);
-    } else {
-      arduino.pins.forEach(pin => {
-        updatePinState(arduino.arduinoID, pin.pin, pin.state);
-      });
-    }
-  });
-  
-  existingArduinoIDs.forEach(id => {
-    if (!data.some(arduino => arduino.arduinoID === id)) {
-      removeArduino(id);
-    }
-  });
-}
-
-// 아두이노 추가
-function addArduino(arduino) {
-  if (!slaveData[arduino.arduinoID]) {
-    console.log(`Adding arduino: ${arduino.arduinoID}`);
-    slaveData[arduino.arduinoID] = JSON.parse(JSON.stringify(arduino));
-    const container = document.getElementById('arduinoContainer');
+    slaveData[arduino.arduinoID] = arduino;
     const card = createArduinoCard(arduino);
     container.appendChild(card);
-  }
+  });
 }
 
-// 아두이노 제거
-function removeArduino(arduinoID) {
-  if (slaveData[arduinoID]) {
-    console.log(`Removing arduino: ${arduinoID}`);
-    delete slaveData[arduinoID];
-    const card = document.querySelector(`.card[data-arduino-id="${arduinoID}"]`);
-    if (card && card.parentNode) {
-      card.parentNode.removeChild(card);
-    }
-  }
-}
-
-// 핀 상태 업데이트
-function updatePinState(arduinoID, pinNumber, state) {
-  const arduino = slaveData[arduinoID];
-  if (arduino) {
-    const pin = arduino.pins.find(p => p.pin === pinNumber);
-    if (pin && pin.state === state) {
-      console.log(`Skipped unchanged pin: ${arduinoID}, Pin ${pinNumber}`);
-      return;
-    }
-    if (pin) pin.state = state;
-  }
-  
-  const checkbox = document.querySelector(`#card-${arduinoID}-pin-${pinNumber} input[type="checkbox"]`);
-  if (checkbox) {
-    checkbox.checked = state === 'on';
-  } else {
-    console.warn(`Checkbox not found for ${arduinoID}, Pin ${pinNumber}`);
-  }
-  
-  const globalVarName = `${arduinoID}_pin_${pinNumber}`;
-  if (monitoredPins.includes(globalVarName)) {
-    window[globalVarName] = state === 'on';
-    updateMonitoredPins(globalVarName);
-  }
-  
-  const key = `${arduinoID}_${pinNumber}`;
-  if (pendingCommands[key] && pendingCommands[key].state === state) {
-    clearInterval(pendingCommands[key].intervalId);
-    delete pendingCommands[key];
-  }
-}
-
-// 명령 전송 및 재전송
+// 명령을 보내고, 일정 간격으로 재전송하는 함수
 function sendCommandWithRetry(commandMsg) {
-  const key = `${commandMsg.arduinoID}_${commandMsg.pin}`;
-  console.log(`Sending command: ${key}, State ${commandMsg.state}`);
-  const currentArduino = slaveData[commandMsg.arduinoID];
-  
-  if (currentArduino) {
-    const currentPin = currentArduino.pins.find(p => p.pin === commandMsg.pin);
-    if (currentPin && currentPin.state === commandMsg.state) {
-      console.log(`Skipped redundant command: ${key}, State ${commandMsg.state}`);
-      if (pendingCommands[key]) {
-        clearInterval(pendingCommands[key].intervalId);
-        delete pendingCommands[key];
-      }
-      return;
-    }
-  } else {
-    console.warn(`Arduino not found in slaveData: ${commandMsg.arduinoID}`);
-  }
-  
+  const key = commandMsg.arduinoID + '_' + commandMsg.pin;
   if (pendingCommands[key]) {
     clearInterval(pendingCommands[key].intervalId);
   }
-  
+  // 명령 즉시 전송
   channel.postMessage(commandMsg);
+  // 2초 간격으로 재전송 (slave에서 상태 업데이트를 받으면 pending 명령 삭제)
   const intervalId = setInterval(() => {
-    const arduino = slaveData[commandMsg.arduinoID];
-    if (arduino) {
-      const pin = arduino.pins.find(p => p.pin === commandMsg.pin);
-      if (pin && pin.state === commandMsg.state) {
-        clearInterval(intervalId);
-        delete pendingCommands[key];
-        return;
-      }
-    }
-    console.log(`Retrying command: ${key}, State ${commandMsg.state}`);
     channel.postMessage(commandMsg);
-  }, 5000);
-  
-  pendingCommands[key] = { state: commandMsg.state, intervalId };
+  }, 2000);
+  pendingCommands[key] = { command: commandMsg.command, intervalId };
 }
 
-// BroadcastChannel 메시지 처리
+// BroadcastChannel을 통해 slave.html로부터 메시지 수신
 channel.onmessage = (event) => {
   lastSlaveMessageTime = Date.now();
-  const overlay = document.getElementById('overlay');
-  overlay.style.display = 'none';
-  
   const data = event.data;
-  if (!data) {
-    console.error('Received empty message data');
-    return;
-  }
-  
-  try {
-    if (data.type === 'slaveUpdate' && data.arduinos) {
-      console.log('Received slaveUpdate:', data.arduinos);
-      updateUI(data.arduinos);
-    } else if (data.type === 'pinUpdate') {
-      console.log(`Pin update: ${data.arduinoID}, Pin ${data.pin}, State ${data.state}`);
-      updatePinState(data.arduinoID, data.pin, data.state);
-    } else if (data.type === 'arduinoConnect') {
-      console.log(`Arduino connected: ${data.arduinoID}`);
-      const arduino = {
-        arduinoID: data.arduinoID,
-        arduinoNickname: data.arduinoNickname || '',
-        pins: data.pins || []
-      };
-      addArduino(arduino);
-    } else if (data.type === 'arduinoDisconnect') {
-      console.log(`Arduino disconnected: ${data.arduinoID}`);
-      removeArduino(data.arduinoID);
-    } else {
-      console.warn('Unknown message type:', data.type);
-    }
-  } catch (err) {
-    console.error('Error processing BroadcastChannel message:', err.message, data);
+  // full update: slave.html에서 보내는 전체 슬레이브 정보
+  if (data.type === 'slaveUpdate' && data.arduinos) {
+    updateUI(data.arduinos);
+    // pending 명령 중 slave에서 반영된 상태와 일치하면 재전송 중지
+    data.arduinos.forEach(arduino => {
+      arduino.pins.forEach(pin => {
+        const key = arduino.arduinoID + '_' + pin.pin;
+        if (pendingCommands[key] && pendingCommands[key].command === pin.state) {
+          clearInterval(pendingCommands[key].intervalId);
+          delete pendingCommands[key];
+        }
+        // read 핀인 경우 전역 변수 업데이트
+        if (pin.mode === 'read') {
+          let globalVarName = arduino.arduinoID + "_pin_" + pin.pin;
+          window[globalVarName] = (pin.state === 'on');
+        }
+      });
+    });
   }
 };
 
-// 주기적 연결 상태 체크
+// 주기적으로 slave와의 연결 상태 체크 (연결 끊겼으면 오버레이 표시)
+// setInterval(() => {
+//   const now = Date.now();
+//   const overlay = document.getElementById('overlay');
+//   if (now - lastSlaveMessageTime > RECONNECT_TIMEOUT) {
+//     overlay.style.display = 'flex';
+//   } else {
+//     overlay.style.display = 'none';
+//   }
+// }, 1000);
+
+// 주기적으로 heartbeat 전송 (연결 유지)
 setInterval(() => {
-  const now = Date.now();
-  const overlay = document.getElementById('overlay');
-  if (now - lastSlaveMessageTime > RECONNECT_TIMEOUT) {
-    overlay.style.display = 'flex';
-  } else {
-    overlay.style.display = 'none';
+  channel.postMessage({ type: 'heartbeat' });
+}, 3000);
+
+// 키보드 처리: Ctrl + S 키 조합으로 arduinoContainer 토글
+document.addEventListener('keydown', (event) => {
+  if (event.ctrlKey && event.code === "KeyS") {
+    const container = document.getElementById("arduinoContainer");
+    container.style.display = (container.style.display === "block" ? "none" : "block");
+    event.preventDefault();
   }
-}, 10000);
-
-// 주기적 heartbeat 전송
-setInterval(() => {
-  console.log('Sending heartbeat');
-  channel.postMessage({ type: 'heartbeat' });
-}, 5000);
-
-// 페이지 로드 시 초기화
-window.addEventListener('DOMContentLoaded', () => {
-  console.log('Page loaded, sending initial heartbeat');
-  channel.postMessage({ type: 'heartbeat' });
-  updateMonitoredPins();
 });
 
-// 트리거 함수 - write핀을 제어
 function triggerPinOn(pinName) {
-  const onFunc = window[`${pinName}_on`];
+  const onName  = `${pinName}_on`;
+  const onFunc  = window[onName];
   if (typeof onFunc === 'function') {
     onFunc();
   }
 }
 
 function triggerPinOff(pinName) {
-  const offFunc = window[`${pinName}_off`];
-  if (typeof offFunc === 'function') {
-    offFunc();
+  const onName  = `${pinName}_off`;
+  const onFunc  = window[onName];
+  if (typeof onFunc === 'function') {
+    onFunc();
   }
 }
 
 function triggerPinOnAndOff(pinName) {
-  const onFunc = window[`${pinName}_on`];
-  const offFunc = window[`${pinName}_off`];
+  const onName  = `${pinName}_on`;
+  const offName = `${pinName}_off`;
+  const onFunc  = window[onName];
+  const offFunc = window[offName];
   if (typeof onFunc === 'function') {
     onFunc();
+    console.log(`Triggering ${onName}`);
     if (typeof offFunc === 'function') {
       setTimeout(offFunc, 500);
+      console.log(`Triggering ${offName}`);
     }
   }
 }

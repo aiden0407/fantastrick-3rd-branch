@@ -225,7 +225,17 @@
     let isPasswordEntered = false;
     let pin28Activated = false;
 
-    const pinActions = {
+    const monitoredPins = [
+      "ATMmega-1_pin_22",
+      "ATMmega-1_pin_23",
+      "ATMmega-1_pin_24",
+      "ATMmega-1_pin_25",
+      "ATMmega-1_pin_26",
+      "ATMmega-1_pin_27",
+      "ATMmega-1_pin_28",
+    ];
+
+    const pinActions_on = {
       "ATMmega-1_pin_22": () => {
         if (!pin22Activated) {
           pin22Activated = true;
@@ -273,13 +283,12 @@
     };
 
     function updatePinDisplay(pinIdentifier) {
-      if (pinActions[pinIdentifier] && window[pinIdentifier] === true) {
-        pinActions[pinIdentifier]();
+      if (window[pinIdentifier] === true) {
+        if (pinActions_on[pinIdentifier]) {
+          pinActions_on[pinIdentifier]();
+        }
       }
     }
-    setInterval(() => {
-      Object.keys(pinActions).forEach(updatePinDisplay);
-    }, 200);
 
     function showHitEffect() {
       if (!pin22Activated || isPasswordEntered) return;

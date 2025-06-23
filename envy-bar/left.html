@@ -30,7 +30,12 @@
         let pin25Activated = false;
         let pin33Activated = false;
 
-        const pinActions = {
+        const monitoredPins = [
+            "barmega-1_pin_25",
+            "barmega-1_pin_33",
+        ];
+
+        const pinActions_on = {
             "barmega-1_pin_25": () => {
                 if (!pin25Activated && pin33Activated) {
                     pin25Activated = true;
@@ -45,13 +50,13 @@
         };
 
         function updatePinDisplay(pinIdentifier) {
-            if (pinActions[pinIdentifier] && window[pinIdentifier] === true) {
-                pinActions[pinIdentifier]();
+            if (window[pinIdentifier] === true) {
+                if (pinActions_on[pinIdentifier]) {
+                    pinActions_on[pinIdentifier]();
+                }
             }
         }
-        setInterval(() => {
-            Object.keys(pinActions).forEach(updatePinDisplay);
-        }, 200);
+
         $('#section0').click(function () {
             section0.style.display = "none";
         });

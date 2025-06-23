@@ -134,7 +134,7 @@
     <div style="display: flex; width: 95%; gap: 40px; position: absolute; justify-content: center;">
       <div style="width: 49%; position: relative; display: flex; justify-content: center; align-items: center;">
         <img src="./img/itemvault_left_base.png" alt="itemvault_left_base" style="width: 100%;">
-        <img src="./img/eqip_pic4.png" alt="eqip_pic3" style="width: 90%; position: absolute; bottom: 3%;">
+        <img src="./img/eqip_pic4.png" alt="eqip_pic3" style="width: 90%; position: absolute; bottom: 3.5%;">
       </div>
       <div style="width: 45%; position: relative; display: flex; justify-content: center; align-items: center;">
         <img src="./img/itemdisinfect_rigt_base.png" alt="itemdisinfect_rigt_base" style="width: 100%;">
@@ -191,7 +191,25 @@
 
     let equipCleared = false;
 
-    const pinActions = {
+    const monitoredPins = [
+      "disinfectmega-2_pin_22",
+      "disinfectmega-2_pin_23",
+      "disinfectmega-2_pin_24",
+      "disinfectmega-2_pin_25",
+      "disinfectmega-2_pin_26",
+      "disinfectmega-2_pin_27",
+      "disinfectmega-2_pin_28",
+      "disinfectmega-2_pin_29",
+      "disinfectmega-2_pin_30",
+      "disinfectmega-2_pin_31",
+      "disinfectmega-2_pin_32",
+      "disinfectmega-2_pin_33",
+      "disinfectmega-2_pin_34",
+      "disinfectmega-2_pin_35",
+      "disinfectmega-2_pin_36"
+    ];
+
+    const pinActions_on = {
       "disinfectmega-2_pin_22": () => {
         if (!pin22Activated) {
           pin22Activated = true;
@@ -546,17 +564,16 @@
           }, 5000);
         }
       },
-
     };
 
     function updatePinDisplay(pinIdentifier) {
-      if (pinActions[pinIdentifier] && window[pinIdentifier] === true) {
-        pinActions[pinIdentifier]();
+      if (window[pinIdentifier] === true) {
+        if (pinActions_on[pinIdentifier]) {
+          pinActions_on[pinIdentifier]();
+        }
       }
     }
-    setInterval(() => {
-      Object.keys(pinActions).forEach(updatePinDisplay);
-    }, 200);
+
     $('#section0').click(function () {
       section0.style.display = "none";
       section1.style.display = "flex";

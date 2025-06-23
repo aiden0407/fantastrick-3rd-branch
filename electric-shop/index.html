@@ -447,13 +447,12 @@
     };
 
     function updatePinDisplay(pinIdentifier) {
-      if (pinActions_on[pinIdentifier] && window[pinIdentifier] === true) {
-        pinActions_on[pinIdentifier]();
+      if (window[pinIdentifier] === true) {
+        if (pinActions_on[pinIdentifier]) {
+          pinActions_on[pinIdentifier]();
+        }
       }
     }
-    setInterval(() => {
-      Object.keys(pinActions_on).forEach(updatePinDisplay);
-    }, 200);
 
     $('#section0').click(function () {
       section0.style.display = "none";
