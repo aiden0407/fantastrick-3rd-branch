@@ -147,6 +147,30 @@
         <div class="pin-toggle">Pin 34: <button id="v34">OFF</button></div>
     </section>
 
+    <!-- street -->
+    <section>
+        <h2>street (streetmega-2) 핀</h2>
+        <div class="pin-toggle">Pin 22: <button id="st22">OFF</button></div>
+        <div class="pin-toggle">Pin 23: <button id="st23">OFF</button></div>
+        <div class="pin-toggle">Pin 24: <button id="st24">OFF</button></div>
+        <div class="pin-toggle">Pin 25: <button id="st25">OFF</button></div>
+        <div class="pin-toggle">Pin 26: <button id="st26">OFF</button></div>
+        <div class="pin-toggle">Pin 27: <button id="st27">OFF</button></div>
+        <div class="pin-toggle">Pin 28: <button id="st28">OFF</button></div>
+        <div class="pin-toggle">Pin 29: <button id="st29">OFF</button></div>
+        <div class="pin-toggle">Pin 30: <button id="st30">OFF</button></div>
+        <div class="pin-toggle">Pin 31: <button id="st31">OFF</button></div>
+        <div class="pin-toggle">Pin 32: <button id="st32">OFF</button></div>
+        <div class="pin-toggle">Pin 33: <button id="st33">OFF</button></div>
+        <div class="pin-toggle">Pin 34: <button id="st34">OFF</button></div>
+        <div class="pin-toggle">Pin 35: <button id="st35">OFF</button></div>
+        <div class="pin-toggle">Pin 36: <button id="st36">OFF</button></div>
+        <div class="pin-toggle">Pin 37: <button id="st37">OFF</button></div>
+        <div class="pin-toggle">Pin 38: <button id="st38">OFF</button></div>
+        <div class="pin-toggle">Pin 39: <button id="st39">OFF</button></div>
+        <div class="pin-toggle">Pin 40: <button id="st40">OFF</button></div>
+    </section>
+
     <!-- <div id="log">▶ 로그가 여기에 표시됩니다.</div> -->
 
     <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 50px;">
@@ -154,8 +178,12 @@
         <a href="./atm/broken.html" target="_blank">고장난 ATM</a>
         <a href="./electric-shop/" target="_blank">전파상 슬롯</a>
         <a href="./disinfecting-room/" target="_blank">소독실</a>
-        <a href="./safe-house/" target="_blank">안전가옥</a>
-        <a href="./envy-bar/" target="_blank">엔비바</a>
+        <a href="./safe-house/left.html" target="_blank">안전가옥(L)</a>
+        <a href="./safe-house/right.html" target="_blank">안전가옥(R)</a>
+        <a href="./envy-bar/left.html" target="_blank">엔비바(L)</a>
+        <a href="./envy-bar/right.html" target="_blank">엔비바(R)</a>
+        <a href="./street/left.html" target="_blank">거리(L)</a>
+        <a href="./street/right.html" target="_blank">거리(R)</a>
     </div>
 
     <script>
@@ -166,6 +194,7 @@
         const stateDisinfecting = { 22: 'off', 23: 'off', 24: 'off', 25: 'off', 26: 'off', 27: 'off', 28: 'off', 29: 'off', 30: 'off', 31: 'off', 32: 'off', 33: 'off', 34: 'off', 35: 'off', 36: 'off' };
         const stateSafe = { 22: 'off', 24: 'off', 25: 'off', 26: 'off', 27: 'off', 28: 'off', 29: 'off', 30: 'off', 31: 'off' };
         const stateBar = { 22: 'off', 23: 'off', 24: 'off', 25: 'off', 26: 'off', 27: 'off', 28: 'off', 29: 'off', 30: 'off', 31: 'off', 32: 'off', 33: 'off', 34: 'off' };
+        const stateStreet = { 22: 'off', 23: 'off', 24: 'off', 25: 'off', 26: 'off', 27: 'off', 28: 'off', 29: 'off', 30: 'off', 31: 'off', 32: 'off', 33: 'off', 34: 'off', 35: 'off', 36: 'off', 37: 'off', 38: 'off', 39: 'off', 40: 'off' };
         // const logEl = document.getElementById('log');
 
         // function log(txt) {
@@ -194,6 +223,9 @@
             const pinsV = Object.entries(stateBar).map(([pin, st]) => ({
                 pin: Number(pin), mode: 'read', state: st
             }));
+            const pinsSt = Object.entries(stateStreet).map(([pin, st]) => ({
+                pin: Number(pin), mode: 'read', state: st
+            }));
 
             const msg = {
                 type: 'slaveUpdate',
@@ -203,7 +235,8 @@
                     { arduinoID: 'SLOTmega-2', pins: pinsE },
                     { arduinoID: 'disinfectmega-2', pins: pinsD },
                     { arduinoID: 'safemega-1', pins: pinsS },
-                    { arduinoID: 'barmega-1', pins: pinsV }
+                    { arduinoID: 'barmega-1', pins: pinsV },
+                    { arduinoID: 'streetmega-2', pins: pinsSt }
                 ]
             };
             channel.postMessage(msg);
@@ -227,6 +260,7 @@
         bindButtons('d', stateDisinfecting, [22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36]);
         bindButtons('s', stateSafe, [22, 24, 25, 26, 27, 28, 29, 30, 31]);
         bindButtons('v', stateBar, [22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34]);
+        bindButtons('st', stateStreet, [22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]);
 
         // Front 로부터 오는 제어 메시지 로깅
         channel.onmessage = ev => {
