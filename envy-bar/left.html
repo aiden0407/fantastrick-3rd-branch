@@ -28,6 +28,7 @@
 
     <script>
         let pin25Activated = false;
+        let pin32Activated = false;
         let pin33Activated = false;
 
         const monitoredPins = [
@@ -40,6 +41,14 @@
                 if (!pin25Activated && pin33Activated) {
                     pin25Activated = true;
                     $('#section1').css('display', 'flex');
+                }
+            },
+            "barmega-1_pin_32": () => {
+                if (!pin32Activated) {
+                    pin32Activated = true;
+                    setTimeout(() => {
+                        location.reload();
+                    }, 6000);
                 }
             },
             "barmega-1_pin_33": () => {

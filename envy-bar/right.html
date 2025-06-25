@@ -22,10 +22,10 @@
 
     <div id="section1" class="section">
         <div
-            style="width: 100%; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 50px;">
+            style="width: 100%; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 50px; margin-top: 100px;">
             <div style="display: flex; justify-content: center; align-items: center; width: 100%;">
                 <div
-                    style="width: 30%; position: relative; display: flex; align-items: center; justify-content: center;">
+                    style="width: 25%; position: relative; display: flex; align-items: center; justify-content: center;">
                     <video id="CCTV" style="width: 100%; position: absolute; display: none;" autoplay muted>
                         <source src="./img/video/CCTV.mp4" type="video/mp4">
                     </video>
@@ -37,7 +37,7 @@
                         <source src="./img/video/loading_start.mp4" type="video/mp4">
                     </video>
                 </div>
-                <div style="width: 40%;">
+                <div style="width: 45%;">
                     <video id="footprint_hint" style="width: 100%; display: none;" autoplay muted loop>
                         <source src="./img/video/footprint.mp4" type="video/mp4">
                     </video>
@@ -251,28 +251,39 @@
                     pin32Activated = true;
                     triggerPinOnAndOff('barmega-2_pin_39');
                     triggerPinOnAndOff('barmega-2_pin_41');
-                    triggerPinOff('barmega-2_pin_22');
-                    triggerPinOff('barmega-2_pin_23');
-                    triggerPinOff('barmega-2_pin_24');
-                    triggerPinOff('barmega-2_pin_25');
-                    triggerPinOff('barmega-2_pin_26');
-                    triggerPinOff('barmega-2_pin_27');
-                    triggerPinOff('barmega-2_pin_28');
-                    triggerPinOff('barmega-2_pin_29');
-                    triggerPinOff('barmega-2_pin_30');
-                    triggerPinOff('barmega-2_pin_31');
-                    triggerPinOff('barmega-2_pin_32');
-                    triggerPinOff('barmega-2_pin_33');
-                    triggerPinOff('barmega-2_pin_34');
-                    triggerPinOff('barmega-2_pin_35');
-                    triggerPinOff('barmega-2_pin_36');
-                    triggerPinOff('barmega-2_pin_37');
-                    triggerPinOff('barmega-2_pin_38');
-                    triggerPinOff('barmega-2_pin_40');
-                    triggerPinOff('barmega-2_pin_41');
                     setTimeout(() => {
+                        triggerPinOff('barmega-2_pin_22');
+                        triggerPinOff('barmega-2_pin_23');
+                        triggerPinOff('barmega-2_pin_24');
+                        triggerPinOff('barmega-2_pin_25');
+                    }, 1000);
+                    setTimeout(() => {
+                        triggerPinOff('barmega-2_pin_26');
+                        triggerPinOff('barmega-2_pin_27');
+                        triggerPinOff('barmega-2_pin_28');
+                        triggerPinOff('barmega-2_pin_29');
+                    }, 2000);
+                    setTimeout(() => {
+                        triggerPinOff('barmega-2_pin_30');
+                        triggerPinOff('barmega-2_pin_31');
+                        triggerPinOff('barmega-2_pin_32');
+                        triggerPinOff('barmega-2_pin_33');
+                    }, 3000);
+                    setTimeout(() => {
+                        triggerPinOff('barmega-2_pin_34');
+                        triggerPinOff('barmega-2_pin_35');
+                        triggerPinOff('barmega-2_pin_36');
+                        triggerPinOff('barmega-2_pin_37');
+                    }, 4000);
+                    setTimeout(() => {
+                        triggerPinOff('barmega-2_pin_38');
+                        triggerPinOff('barmega-2_pin_40');
+                        triggerPinOff('barmega-2_pin_41');
                         location.reload();
                     }, 5000);
+                    setTimeout(() => {
+                        location.reload();
+                    }, 6000);
                 }
             },
             "barmega-1_pin_33": () => {
