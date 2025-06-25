@@ -33,7 +33,12 @@
         let pin23Activated = false;
         let pin26Activated = false;
 
-        const pinActions = {
+        const monitoredPins = [
+            "streetmega-2_pin_23",
+            "streetmega-2_pin_26",
+        ];
+
+        const pinActions_on = {
             "streetmega-2_pin_23": () => {
                 if (!pin23Activated) {
                     pin23Activated = true;
@@ -47,25 +52,23 @@
                     pin26Activated = true;
                     setTimeout(() => {
                         $('#right').show();
+                        $('#score').attr('src', './img/score.png');
                         setTimeout(() => {
                             $('#right').hide();
-                            $('#score').attr('src', './img/score.png');
-                            // 영상 길이에 맞춰서 타이밍 조정
                         }, 7000);
-                    }, 3000)
-                        ;
+                    }, 3000);
                 }
             }
         };
 
         function updatePinDisplay(pinIdentifier) {
-            if (pinActions[pinIdentifier] && window[pinIdentifier] === true) {
-                pinActions[pinIdentifier]();
+            if (window[pinIdentifier] === true) {
+                if (pinActions_on[pinIdentifier]) {
+                    pinActions_on[pinIdentifier]();
+                }
             }
         }
-        setInterval(() => {
-            Object.keys(pinActions).forEach(updatePinDisplay);
-        }, 200);
+
         $('#section0').click(function () {
             section0.style.display = "none";
         });
