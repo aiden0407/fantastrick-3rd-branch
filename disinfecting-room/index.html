@@ -542,23 +542,31 @@
           triggerPinOnAndOff('disinfectmega-1_pin_26');
           triggerPinOnAndOff('disinfectmega-1_pin_27');
           triggerPinOnAndOff('disinfectmega-1_pin_28');
-          triggerPinOff('disinfectmega-1_pin_22');
-          triggerPinOff('disinfectmega-1_pin_23');
-          triggerPinOff('disinfectmega-1_pin_24');
-          triggerPinOff('disinfectmega-1_pin_29');
-          triggerPinOff('disinfectmega-1_pin_30');
-          triggerPinOff('disinfectmega-1_pin_31');
-          triggerPinOff('disinfectmega-1_pin_32');
-          triggerPinOff('disinfectmega-1_pin_37');
-          triggerPinOff('disinfectmega-1_pin_38');
-          triggerPinOff('disinfectmega-1_pin_39');
-          triggerPinOff('disinfectmega-1_pin_40');
-          triggerPinOff('disinfectmega-1_pin_41');
-          triggerPinOff('disinfectmega-1_pin_42');
-          triggerPinOff('disinfectmega-1_pin_43');
-          triggerPinOff('disinfectmega-1_pin_47');
-          triggerPinOff('disinfectmega-1_pin_48');
-          triggerPinOff('disinfectmega-1_pin_49');
+          setTimeout(() => {
+            triggerPinOff('disinfectmega-1_pin_22');
+            triggerPinOff('disinfectmega-1_pin_23');
+            triggerPinOff('disinfectmega-1_pin_24');
+            triggerPinOff('disinfectmega-1_pin_29');
+          }, 1000);
+          setTimeout(() => {
+            triggerPinOff('disinfectmega-1_pin_30');
+            triggerPinOff('disinfectmega-1_pin_31');
+            triggerPinOff('disinfectmega-1_pin_32');
+            triggerPinOff('disinfectmega-1_pin_37');
+          }, 2000);
+          setTimeout(() => {
+            triggerPinOff('disinfectmega-1_pin_38');
+            triggerPinOff('disinfectmega-1_pin_39');
+            triggerPinOff('disinfectmega-1_pin_40');
+            triggerPinOff('disinfectmega-1_pin_41');
+          }, 3000);
+          setTimeout(() => {
+            triggerPinOff('disinfectmega-1_pin_42');
+            triggerPinOff('disinfectmega-1_pin_43');
+            triggerPinOff('disinfectmega-1_pin_47');
+            triggerPinOff('disinfectmega-1_pin_48');
+            triggerPinOff('disinfectmega-1_pin_49');
+          }, 4000);
           setTimeout(() => {
             location.reload();
           }, 5000);
