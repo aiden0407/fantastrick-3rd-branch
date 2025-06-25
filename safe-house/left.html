@@ -50,7 +50,18 @@
         let pin30Activated = false;
         let pin31Activated = false;
 
-        const pinActions = {
+        const monitoredPins = [
+            "safemega-1_pin_22",
+            "safemega-1_pin_24",
+            "safemega-1_pin_25",
+            "safemega-1_pin_27",
+            "safemega-1_pin_28",
+            "safemega-1_pin_29",
+            "safemega-1_pin_30",
+            "safemega-1_pin_31",
+        ];
+
+        const pinActions_on = {
             "safemega-1_pin_22": () => {
                 if (!pin22Activated) {
                     pin22Activated = true;
@@ -110,10 +121,12 @@
                 if (isAfterPin25 && !pin27Activated) {
                     pin27Activated = true;
                     new Audio('./sound/narration/안전가옥3.mp3').play();
-                    triggerPinOn('safemega-1_pin_33');
+                    setTimeout(() => {
+                        triggerPinOn('safemega-1_pin_33');
+                    }, 5000);
                     setTimeout(() => {
                         triggerPinOff('safemega-1_pin_33');
-                    }, 10000);
+                    }, 15000);
                     setTimeout(() => {
                         $('#textbox1').css('display', 'none');
                         $('#agentpic').css('display', 'none');
@@ -154,7 +167,8 @@
                 }
             },
             "safemega-1_pin_31": () => {
-                if (!pin31Activated && isAfterNews) {
+                if (!pin31Activated) {
+                    pin31Activated = true;
                     triggerPinOnAndOff('safemega-1_pin_32');
                     triggerPinOff('safemega-1_pin_33');
                     triggerPinOff('safemega-1_pin_34');
@@ -167,13 +181,13 @@
         };
 
         function updatePinDisplay(pinIdentifier) {
-            if (pinActions[pinIdentifier] && window[pinIdentifier] === true) {
-                pinActions[pinIdentifier]();
+            if (window[pinIdentifier] === true) {
+                if (pinActions_on[pinIdentifier]) {
+                    pinActions_on[pinIdentifier]();
+                }
             }
         }
-        setInterval(() => {
-            Object.keys(pinActions).forEach(updatePinDisplay);
-        }, 200);
+
         $('#section0').click(function () {
             section0.style.display = "none";
         });

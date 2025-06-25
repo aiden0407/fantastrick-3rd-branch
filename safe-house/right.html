@@ -36,8 +36,17 @@
         let pin28Activated = false;
         let isAfterNarration4 = false;
         let pin29Activated = false;
+        let pin31Activated = false;
 
-        const pinActions = {
+        const monitoredPins = [
+            "safemega-1_pin_22",
+            "safemega-1_pin_24",
+            "safemega-1_pin_28",
+            "safemega-1_pin_29",
+            "safemega-1_pin_31",
+        ];
+
+        const pinActions_on = {
             "safemega-1_pin_22": () => {
                 if (!pin22Activated) {
                     pin22Activated = true;
@@ -73,16 +82,24 @@
                     }, 42000);
                 }
             },
+            "safemega-1_pin_31": () => {
+                if (!pin31Activated) {
+                    pin31Activated = true;
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                }
+            },
         };
 
         function updatePinDisplay(pinIdentifier) {
-            if (pinActions[pinIdentifier] && window[pinIdentifier] === true) {
-                pinActions[pinIdentifier]();
+            if (window[pinIdentifier] === true) {
+                if (pinActions_on[pinIdentifier]) {
+                    pinActions_on[pinIdentifier]();
+                }
             }
         }
-        setInterval(() => {
-            Object.keys(pinActions).forEach(updatePinDisplay);
-        }, 200);
+
         $('#section0').click(function () {
             section0.style.display = "none";
         });

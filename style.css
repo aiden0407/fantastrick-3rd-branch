@@ -40,7 +40,7 @@
     bottom: 0;
     background: rgba(0, 0, 0, 0.8);
     color: #fff;
-    display: none;
+    /* display: none; */
     display: flex;
     justify-content: center;
     align-items: center;
