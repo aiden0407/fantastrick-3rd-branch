@@ -211,9 +211,9 @@
                         triggerPinOff('barmega-2_pin_33');
                         $('#logo').css('display', 'none');
                         $('#CCTV').css('display', 'block');
+                        new Audio('./img/video/CCTV.mp3').play();
                     }, 8000);
                     setTimeout(() => {
-                        //$('#CCTV').css('display', 'none');
                         new Audio('./sound/narration/바9.mp3').play();
                         triggerPinOn('barmega-2_pin_32');
                         triggerPinOn('barmega-2_pin_33');
