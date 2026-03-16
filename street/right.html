@@ -13,65 +13,122 @@
 <body>
     <div id="overlay">연결이 끊겼습니다.</div>
     <div id="arduinoContainer"></div>
-    <div id="hitContainer"></div>
-    <div id="wrongOverlay"></div>
 
     <div id="section0" class="section" style="display: flex; color: red; font-size: 40px;">
         정상적인 초기화를 위해 화면을 터치해 주세요
     </div>
 
     <div id="section1" class="section">
-        <div style="width: 100%; position: relative;">
+        <div
+            style="width: 100%; height: 100%; position: relative; display: flex; justify-content: center; align-items: center;">
             <video id="right" style="width: 100%; position: absolute; display: none;" autoplay muted>
                 <source src="./video/ending.mp4" type="video/mp4">
             </video>
             <img id='score' src="./img/noise.gif" alt="noise" style="width: 100%;" />
+            <div id="mission"
+                style="position: absolute; width: 91%; top: 28.7%; margin-right: 0.3%; z-index: 1; display: none; gap: 2.4%;">
+                <div style="width: 100%; display: flex; gap: 2.11vh; flex-direction: column;">
+                    <img id="CCTV" src="./img/CCTV.png" alt="CCTV" style="width: 100%; opacity: 0;" />
+                    <img id="item" src="./img/item.png" alt="item" style="width: 100%; opacity: 0;" />
+                    <img id="lock" src="./img/lock.png" alt="lock" style="width: 100%; opacity: 0;" />
+                    <img id="key" src="./img/key.png" alt="key" style="width: 100%; opacity: 0;" />
+                    <img id="777" src="./img/777.png" alt="777" style="width: 100%; opacity: 0;" />
+                </div>
+                <div style="width: 100%; display: flex; gap: 2.11vh; flex-direction: column;">
+                    <img id="wedding" src="./img/wedding.png" alt="wedding" style="width: 100%; opacity: 0;" />
+                    <img id="weapon" src="./img/weapon.png" alt="weapon" style="width: 100%; opacity: 0;" />
+                    <img id="kill" src="./img/kill.png" alt="kill" style="width: 100%; opacity: 0;" />
+                    <img id="truth" src="./img/truth.png" alt="truth" style="width: 100%; opacity: 0;" />
+                    <img id="clear" src="./img/clear.png" alt="clear" style="width: 100%; opacity: 0;" />
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        let pin23Activated = false;
-        let pin26Activated = false;
+        const executedPins = {};
 
         const monitoredPins = [
             "streetmega-2_pin_23",
             "streetmega-2_pin_26",
+            "streetmega-2_pin_28",
+            "streetmega-2_pin_29",
+            "streetmega-2_pin_30",
+            "streetmega-2_pin_31",
+            "streetmega-2_pin_32",
+            "streetmega-2_pin_33",
+            "streetmega-2_pin_34",
+            "streetmega-2_pin_35",
+            "streetmega-2_pin_36",
+            "streetmega-2_pin_37",
+            "streetmega-2_pin_38",
+            "streetmega-2_pin_41",
+            "streetmega-2_pin_42",
         ];
 
         const pinActions_on = {
             "streetmega-2_pin_23": () => {
-                if (!pin23Activated) {
-                    pin23Activated = true;
-                    setTimeout(() => {
-                        section1.style.display = "block";
-                    }, 3000);
-                }
+                setTimeout(() => {
+                    section1.style.display = "block";
+                }, 3000);
             },
             "streetmega-2_pin_26": () => {
-                if (!pin26Activated) {
-                    pin26Activated = true;
+                setTimeout(() => {
+                    $('#right').show();
+                    $('#score').attr('src', './img/score.png');
                     setTimeout(() => {
-                        $('#right').show();
-                        $('#score').attr('src', './img/score.png');
-                        setTimeout(() => {
-                            $('#right').hide();
-                        }, 7000);
-                    }, 3000);
-                }
-            }
+                        $('#right').hide();
+                        $('#mission').css('display', 'flex');
+                    }, 7000);
+                }, 3000);
+            },
+            "streetmega-2_pin_28": () => { },
+            "streetmega-2_pin_29": () => { },
+            "streetmega-2_pin_30": () => { },
+            "streetmega-2_pin_31": () => { },
+            "streetmega-2_pin_32": () => { },
+            "streetmega-2_pin_33": () => $('#item').css('opacity', '1'),
+            "streetmega-2_pin_34": () => $('#lock').css('opacity', '1'),
+            "streetmega-2_pin_35": () => $('#key').css('opacity', '1'),
+            "streetmega-2_pin_36": () => $('#777').css('opacity', '1'),
+            "streetmega-2_pin_37": () => $('#wedding').css('opacity', '1'),
+            "streetmega-2_pin_38": () => $('#weapon').css('opacity', '1'),
+            "streetmega-2_pin_41": () => $('#kill').css('opacity', '1'),
+            "streetmega-2_pin_42": () => $('#truth').css('opacity', '1'),
         };
 
         function updatePinDisplay(pinIdentifier) {
-            if (window[pinIdentifier] === true) {
-                if (pinActions_on[pinIdentifier]) {
-                    pinActions_on[pinIdentifier]();
-                }
+            if (
+                window[pinIdentifier] === true &&
+                pinActions_on[pinIdentifier] &&
+                !executedPins[pinIdentifier]
+            ) {
+                executedPins[pinIdentifier] = true;
+                pinActions_on[pinIdentifier]();
+                checkGroups();
             }
         }
 
         $('#section0').click(function () {
             section0.style.display = "none";
         });
+
+        const CCTV_pins = ["streetmega-2_pin_28", "streetmega-2_pin_29", "streetmega-2_pin_30", "streetmega-2_pin_31", "streetmega-2_pin_32"];
+        const CLEAR_pins = [
+            "streetmega-2_pin_28", "streetmega-2_pin_29", "streetmega-2_pin_30",
+            "streetmega-2_pin_31", "streetmega-2_pin_32", "streetmega-2_pin_33",
+            "streetmega-2_pin_34", "streetmega-2_pin_35", "streetmega-2_pin_36",
+            "streetmega-2_pin_37", "streetmega-2_pin_38", "streetmega-2_pin_41",
+            "streetmega-2_pin_42"
+        ];
+        function checkGroups() {
+            if (CCTV_pins.every(pin => executedPins[pin] === true)) {
+                $('#CCTV').css('opacity', '1');
+            }
+            if (CLEAR_pins.every(pin => executedPins[pin] === true)) {
+                $('#clear').css('opacity', '1');
+            }
+        }
     </script>
 
     <script src="../script.js"></script>

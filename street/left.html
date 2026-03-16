@@ -13,43 +13,59 @@
 <body>
     <div id="overlay">연결이 끊겼습니다.</div>
     <div id="arduinoContainer"></div>
-    <div id="hitContainer"></div>
-    <div id="wrongOverlay"></div>
 
     <div id="section0" class="section" style="display: flex; color: red; font-size: 40px;">
         정상적인 초기화를 위해 화면을 터치해 주세요
     </div>
 
     <div id="section1" class="section">
-        <div style="width: 100%; position: relative;">
+        <div
+            style="width: 100%; height: 100%; position: relative; display: flex; justify-content: center; align-items: center;">
             <video id="left" style="width: 100%; position: absolute;" autoplay muted>
                 <source src="./video/fantastrick_intro.mp4" type="video/mp4">
             </video>
             <img id="menu" src="./img/menu.png" alt="menu" style="width: 100%; display: none;" />
+            <div id="mission"
+                style="position: absolute; width: 91%; top: 28.7%; margin-right: 0.3%; z-index: 1; display: none; gap: 2.4%;">
+                <div style="width: 100%; display: flex; gap: 2.11vh; flex-direction: column;">
+                    <img id="CCTV" src="./img/CCTV.png" alt="CCTV" style="width: 100%; opacity: 0;" />
+                    <img id="item" src="./img/item.png" alt="item" style="width: 100%; opacity: 0;" />
+                    <img id="lock" src="./img/lock.png" alt="lock" style="width: 100%; opacity: 0;" />
+                    <img id="key" src="./img/key.png" alt="key" style="width: 100%; opacity: 0;" />
+                    <img id="777" src="./img/777.png" alt="777" style="width: 100%; opacity: 0;" />
+                </div>
+                <div style="width: 100%; display: flex; gap: 2.11vh; flex-direction: column;">
+                    <img id="wedding" src="./img/wedding.png" alt="wedding" style="width: 100%; opacity: 0;" />
+                    <img id="weapon" src="./img/weapon.png" alt="weapon" style="width: 100%; opacity: 0;" />
+                    <img id="kill" src="./img/kill.png" alt="kill" style="width: 100%; opacity: 0;" />
+                    <img id="truth" src="./img/truth.png" alt="truth" style="width: 100%; opacity: 0;" />
+                    <img id="clear" src="./img/clear.png" alt="clear" style="width: 100%; opacity: 0;" />
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        const bgm1 = new Audio('./sound/BGM1.mp3');
+        const bgm1 = new Audio('./sound/bgm/BGM1.mp3');
         bgm1.loop = true;
-        const bgm2 = new Audio('./sound/BGM2.mp3');
+        const bgm2 = new Audio('./sound/bgm/BGM2.mp3');
         bgm2.loop = true;
-        const bgm3 = new Audio('./sound/BGM3.mp3');
+        const bgm3 = new Audio('./sound/bgm/BGM3.mp3');
         bgm3.loop = true;
-        const bgm3Again = new Audio('./sound/BGM3.mp3');
+        const bgm3Again = new Audio('./sound/bgm/BGM3.mp3');
         bgm3Again.loop = true;
-        const bgm4 = new Audio('./sound/BGM4.mp3');
+        const bgm4 = new Audio('./sound/bgm/BGM4.mp3');
         bgm4.loop = true;
-        const bgm5 = new Audio('./sound/BGM5.mp3');
+        const bgm5 = new Audio('./sound/bgm/BGM5.mp3');
         bgm5.loop = true;
-        const sound1 = new Audio('./sound/효과음1.ogg');
+        const sound1 = new Audio('./sound/effect/effect1.ogg');
         sound1.loop = true;
 
-        let pin22Activated = false;
-        let pin23Activated = false;
+        const executedPins = {};
+        let pin23Activated1 = false;
+        let pin23Activated2 = false;
         let pin24Activated = false;
         let pin25Activated = false;
-        let pin26Activated = false;
         let pin39Activated = false;
         let pin40Activated = false;
 
@@ -59,37 +75,50 @@
             "streetmega-2_pin_24",
             "streetmega-2_pin_25",
             "streetmega-2_pin_26",
+            "streetmega-2_pin_27",
+            "streetmega-2_pin_28",
+            "streetmega-2_pin_29",
+            "streetmega-2_pin_30",
+            "streetmega-2_pin_31",
+            "streetmega-2_pin_32",
+            "streetmega-2_pin_33",
+            "streetmega-2_pin_34",
+            "streetmega-2_pin_35",
+            "streetmega-2_pin_36",
+            "streetmega-2_pin_37",
+            "streetmega-2_pin_38",
             "streetmega-2_pin_39",
-            "streetmega-2_pin_40"
+            "streetmega-2_pin_40",
+            "streetmega-2_pin_41",
+            "streetmega-2_pin_42",
         ];
 
         const pinActions_on = {
             "streetmega-2_pin_22": () => {
-                if (!pin22Activated) {
-                    pin22Activated = true;
-                    $('#section1').show();
-                    new Audio('./video/fantastrick_intro.mp3').play();
+                $('#section1').show();
+                new Audio('./video/fantastrick_intro.mp3').play();
+                setTimeout(() => {
+                    $('#left').hide();
+                    $('#left').attr('src', './video/opening.mp4');
+                    $('#left').delay(500).fadeIn(500);
                     setTimeout(() => {
-                        $('#left').hide();
-                        $('#left').attr('src', './video/opening.mp4');
-                        $('#left').delay(500).fadeIn(500);
-                        setTimeout(() => {
-                            new Audio('./video/opening.mp3').play();
-                        }, 500);
-                    }, 9000);
+                        new Audio('./video/opening.mp3').play();
+                    }, 500);
+                }, 9000);
+                setTimeout(() => {
+                    $('#left').hide();
+                    bgm1.play();
                     setTimeout(() => {
-                        $('#left').hide();
-                        setTimeout(() => {
-                            triggerPinOn('streetmega-1_pin_22');
-                            bgm1.play();
-                            $('#menu').fadeIn(500);
-                        }, 2000);
-                    }, 133000);
-                }
+                        $('#menu').fadeIn(500);
+                        triggerPinOn('streetmega-1_pin_22');
+                        new Audio('./sound/narration/narration1.ogg').play();
+                    }, 1000);
+                }, 134000);
             },
             "streetmega-2_pin_23": () => {
-                if (!pin23Activated) {
-                    pin23Activated = true;
+                if (!pin23Activated1) {
+                    pin23Activated1 = true;
+                    console.log('pin23Activated1')
                     fadeOutAudio(bgm1, 2000);
                     setTimeout(() => {
                         bgm2.play();
@@ -97,90 +126,165 @@
                         triggerPinOnAndOff('streetmega-1_pin_23');
                         blinkPin27()
                     }, 3000);
+                    setTimeout(() => {
+                        new Audio('./sound/narration/narration2.ogg').play();
+                    }, 5000);
+                }
+                if (!pin23Activated2 && pin25Activated) {
+                    pin23Activated2 = true;
+                    console.log('pin23Activated2')
+                    setTimeout(() => {
+                        new Audio('./sound/narration/narration6.ogg').play();
+                    }, 10000);
                 }
             },
             "streetmega-2_pin_24": () => {
-                if (!pin24Activated) {
-                    pin24Activated = true;
-                    sound1.pause();
-                    new Audio('./sound/효과음2.ogg').play();
-                    triggerPinOn('streetmega-1_pin_27');
-                    setTimeout(() => {
-                        triggerPinOn('streetmega-1_pin_28');
-                        triggerPinOn('streetmega-1_pin_29');
-                        new Audio('./sound/효과음2.ogg').play();
-                    }, 1000);
-                    setTimeout(() => {
-                        triggerPinOn('streetmega-1_pin_26');
-                        triggerPinOn('streetmega-1_pin_32');
-                        new Audio('./sound/효과음2.ogg').play();
-                    }, 2000);
-                    setTimeout(() => {
-                        triggerPinOn('streetmega-1_pin_25');
-                        triggerPinOn('streetmega-1_pin_31');
-                        new Audio('./sound/효과음2.ogg').play();
-                    }, 3000);
-                    setTimeout(() => {
-                        triggerPinOn('streetmega-1_pin_24');
-                        triggerPinOn('streetmega-1_pin_30');
-                        new Audio('./sound/효과음2.ogg').play();
-                    }, 4000);
-                }
+                pin24Activated = true;
+                sound1.pause();
+                new Audio('./sound/effect/effect2.ogg').play();
+                triggerPinOn('streetmega-1_pin_27');
+                setTimeout(() => {
+                    triggerPinOn('streetmega-1_pin_28');
+                    triggerPinOn('streetmega-1_pin_29');
+                    new Audio('./sound/effect/effect2.ogg').play();
+                }, 1000);
+                setTimeout(() => {
+                    triggerPinOn('streetmega-1_pin_26');
+                    triggerPinOn('streetmega-1_pin_32');
+                    new Audio('./sound/effect/effect2.ogg').play();
+                }, 2000);
+                setTimeout(() => {
+                    triggerPinOn('streetmega-1_pin_25');
+                    triggerPinOn('streetmega-1_pin_31');
+                    new Audio('./sound/effect/effect2.ogg').play();
+                }, 3000);
+                setTimeout(() => {
+                    triggerPinOn('streetmega-1_pin_24');
+                    triggerPinOn('streetmega-1_pin_30');
+                    new Audio('./sound/effect/effect2.ogg').play();
+                }, 4000);
             },
             "streetmega-2_pin_25": () => {
-                if (!pin25Activated) {
-                    pin25Activated = true;
-                    fadeOutAudio(bgm2, 2000);
-                    setTimeout(() => {
-                        bgm3.play();
-                    }, 3000);
-                }
+                pin25Activated = true;
+                fadeOutAudio(bgm2, 1000);
+                setTimeout(() => {
+                    bgm3.play();
+                }, 2000);
             },
             "streetmega-2_pin_26": () => {
-                if (!pin26Activated) {
-                    pin26Activated = true;
-                    fadeOutAudio(bgm3Again, 2000);
+                fadeOutAudio(bgm3Again, 2000);
+                setTimeout(() => {
+                    bgm5.play();
+                    new Audio('./video/ending.mp3').play();
                     setTimeout(() => {
-                        bgm5.play();
-                        new Audio('./video/ending.mp3').play();
-                        setTimeout(() => {
-                            $('#menu').attr('src', './img/score.png');
-                            // 영상 길이에 맞춰서 타이밍 조정
-                        }, 7000);
-                    }, 3000);
-                }
+                        $('#menu').attr('src', './img/score.png');
+                        $('#mission').css('display', 'flex');
+                        // 영상 길이에 맞춰서 타이밍 조정
+                    }, 7000);
+                }, 3000);
+            },
+            "streetmega-2_pin_27": () => {
+                triggerPinOff('streetmega-1_pin_22');
+                triggerPinOff('streetmega-1_pin_23');
+                triggerPinOff('streetmega-1_pin_24');
+                triggerPinOff('streetmega-1_pin_25');
+                setTimeout(() => {
+                    triggerPinOff('streetmega-1_pin_26');
+                    triggerPinOff('streetmega-1_pin_27');
+                    triggerPinOff('streetmega-1_pin_28');
+                    triggerPinOff('streetmega-1_pin_29');
+                }, 1000);
+                setTimeout(() => {
+                    triggerPinOff('streetmega-1_pin_30');
+                    triggerPinOff('streetmega-1_pin_31');
+                    triggerPinOff('streetmega-1_pin_32');
+                    triggerPinOff('streetmega-1_pin_33');
+                }, 2000);
+                setTimeout(() => {
+                    location.reload();
+                }, 3000);
             },
             "streetmega-2_pin_39": () => {
-                if (!pin39Activated) {
-                    pin39Activated = true;
-                    fadeOutAudio(bgm3, 2000);
+                pin39Activated = true;
+                fadeOutAudio(bgm3, 2000);
+                setTimeout(() => {
+                    bgm4.play();
+                    triggerPinOff('streetmega-1_pin_27');
+                    triggerPinOff('streetmega-1_pin_28');
+                    triggerPinOff('streetmega-1_pin_29');
+                    triggerPinOff('streetmega-1_pin_30');
+                    triggerPinOff('streetmega-1_pin_31');
+                    triggerPinOff('streetmega-1_pin_32');
                     setTimeout(() => {
-                        bgm4.play();
-                    }, 3000);
-                }
+                        new Audio('./sound/narration/narration3.ogg').play();
+                    }, 2000);
+                    setTimeout(() => {
+                        triggerPinOn('streetmega-1_pin_27');
+                        triggerPinOn('streetmega-1_pin_28');
+                        triggerPinOn('streetmega-1_pin_29');
+                        triggerPinOn('streetmega-1_pin_30');
+                        triggerPinOn('streetmega-1_pin_31');
+                        triggerPinOn('streetmega-1_pin_32');
+                        // 나레이션3 종료되는 타이밍에 맞춰서 핀 켜기
+                    }, 5000);
+                }, 3000);
             },
             "streetmega-2_pin_40": () => {
-                if (!pin40Activated) {
-                    pin40Activated = true;
-                    fadeOutAudio(bgm4, 2000);
-                    setTimeout(() => {
-                        bgm3Again.play();
-                    }, 3000);
-                }
+                pin40Activated = true;
+                fadeOutAudio(bgm4, 2000);
+                setTimeout(() => {
+                    bgm3Again.play();
+                }, 3000);
             },
+            "streetmega-2_pin_28": () => { },
+            "streetmega-2_pin_29": () => { },
+            "streetmega-2_pin_30": () => { },
+            "streetmega-2_pin_31": () => { },
+            "streetmega-2_pin_32": () => { },
+            "streetmega-2_pin_33": () => $('#item').css('opacity', '1'),
+            "streetmega-2_pin_34": () => $('#lock').css('opacity', '1'),
+            "streetmega-2_pin_35": () => $('#key').css('opacity', '1'),
+            "streetmega-2_pin_36": () => $('#777').css('opacity', '1'),
+            "streetmega-2_pin_37": () => $('#wedding').css('opacity', '1'),
+            "streetmega-2_pin_38": () => $('#weapon').css('opacity', '1'),
+            "streetmega-2_pin_41": () => $('#kill').css('opacity', '1'),
+            "streetmega-2_pin_42": () => $('#truth').css('opacity', '1'),
         };
 
         function updatePinDisplay(pinIdentifier) {
-            if (window[pinIdentifier] === true) {
-                if (pinActions_on[pinIdentifier]) {
-                    pinActions_on[pinIdentifier]();
-                }
+            if (
+                window[pinIdentifier] === true &&
+                pinActions_on[pinIdentifier] &&
+                !executedPins[pinIdentifier]
+            ) {
+                executedPins[pinIdentifier] = true;
+                pinActions_on[pinIdentifier]();
+                checkGroups();
+            } else if (pinIdentifier === "streetmega-2_pin_23" && window["streetmega-2_pin_23"] === true) {
+                pinActions_on["streetmega-2_pin_23"]();
             }
         }
 
         $('#section0').click(function () {
             section0.style.display = "none";
         });
+
+        const CCTV_pins = ["streetmega-2_pin_28", "streetmega-2_pin_29", "streetmega-2_pin_30", "streetmega-2_pin_31", "streetmega-2_pin_32"];
+        const CLEAR_pins = [
+            "streetmega-2_pin_28", "streetmega-2_pin_29", "streetmega-2_pin_30",
+            "streetmega-2_pin_31", "streetmega-2_pin_32", "streetmega-2_pin_33",
+            "streetmega-2_pin_34", "streetmega-2_pin_35", "streetmega-2_pin_36",
+            "streetmega-2_pin_37", "streetmega-2_pin_38", "streetmega-2_pin_41",
+            "streetmega-2_pin_42"
+        ];
+        function checkGroups() {
+            if (CCTV_pins.every(pin => executedPins[pin] === true)) {
+                $('#CCTV').css('opacity', '1');
+            }
+            if (CLEAR_pins.every(pin => executedPins[pin] === true)) {
+                $('#clear').css('opacity', '1');
+            }
+        }
 
         function blinkPin27() {
             if (pin24Activated) return;
@@ -192,40 +296,58 @@
                     triggerPinOff('streetmega-1_pin_27');
                     blinkPin27();
                 }, 1000);
-
             }, delay);
         }
 
+        let minusCount = 0;
+        const sounds = {
+            plus: ['./sound/effect/effect3.ogg', './sound/effect/effect4.ogg', './sound/effect/effect5.ogg'],
+            minus: './sound/effect/effect6.ogg',
+            star: ['./sound/effect/effect7.ogg', './sound/effect/effect8.ogg', './sound/effect/effect9.ogg', './sound/effect/effect10.ogg'],
+            slash: ['./sound/effect/effect11.ogg', './sound/effect/effect12.ogg'],
+        };
+
         $(document).keydown(function (evt) {
-            if (!pin39Activated) return
+            if (!pin39Activated || pin40Activated) return
 
-            if (evt.keyCode === 111) { // / 키
-                new Audio('./sound/괴성.mp3').play();
-            }
-            if (evt.keyCode === 97) { // 1 키
-                new Audio('./sound/웃음.mp3').play();
-            }
-            if (evt.keyCode === 98) { // 2 키
-                new Audio('./sound/비명.mp3').play();
-            }
-            if (evt.keyCode === 99) { // 3 키
-                new Audio('./sound/narration/거리대사1.mp3').play();
-            }
-            if (evt.keyCode === 100) { // 4 키
-                new Audio('./sound/narration/거리대사2.mp3').play();
-            }
-            if (evt.keyCode === 101) { // 5 키
-                new Audio('./sound/narration/거리대사3.mp3').play();
-            }
+            switch (evt.keyCode) {
+                case 107: // + 키
+                    new Audio(sounds.plus[Math.floor(Math.random() * sounds.plus.length)]).play();
+                    break;
 
-            if (evt.keyCode === 106) { // * 키
-                new Audio('./sound/피격3.ogg').play();
-            }
-            if (evt.keyCode === 107) { // + 키
-                new Audio('./sound/피격1.ogg').play();
-            }
-            if (evt.keyCode === 109) { // - 키
-                new Audio('./sound/피격2.ogg').play();
+                case 109: // - 키
+                    if (minusCount >= 2) return;
+                    if (minusCount === 0) {
+                        triggerPinOn('streetmega-3_pin_30');
+                        triggerPinOn('streetmega-3_pin_31');
+                        setTimeout(() => {
+                            triggerPinOff('streetmega-3_pin_30');
+                            triggerPinOff('streetmega-3_pin_31');
+                        }, 2000);
+                        setTimeout(() => {
+                            triggerPinOff('streetmega-1_pin_29');
+                        }, 4000);
+                        setTimeout(() => {
+                            triggerPinOff('streetmega-1_pin_30');
+                        }, 6000);
+                    } else {
+                        triggerPinOn('streetmeta-3_pin_22');
+                        triggerPinOn('streetmeta-3_pin_23');
+                        new Audio(sounds.minus).play();
+                        setTimeout(() => {
+                            new Audio('./sound/narration/narration3.ogg').play();
+                        }, 2000);
+                    }
+                    minusCount++;
+                    break;
+
+                case 106: // * 키
+                    new Audio(sounds.star[Math.floor(Math.random() * sounds.star.length)]).play();
+                    break;
+
+                case 111: // / 키
+                    new Audio(sounds.slash[Math.floor(Math.random() * sounds.slash.length)]).play();
+                    break;
             }
         });
     </script>
