@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>doctor-room</title>
+  <script src="../jquery.min.js" type='text/javascript'></script>
+  <!-- 공통 arduinoContainer CSS 부분 -->
+  <link rel="stylesheet" href="../style.css" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+
+<body>
+  <div id="overlay">연결이 끊겼습니다.</div>
+  <div id="arduinoContainer"></div>
+  <div id="wrongOverlay"></div>
+
+  <div id="section0"
+    style="width:100%; height:100dvh; display: flex; justify-content: center; align-items: center; color: red; font-size: 40px;">
+    정상적인 초기화를 위해 화면을 터치해 주세요
+  </div>
+
+  <div class="section" id="section1">
+    <div style="width: 37%; height: 92%;">
+      <div id="section-left-1" class="section-left">
+        <img src="./img/profile.png" alt="Doctor Image" style="width: 70%;">
+        <input id="password" class="password-input" type="password" maxlength="4" placeholder="PASSWORD" />
+        <img class="onclickButton" data-base="Loginbutton" id="Loginbutton" src="./img/Loginbutton.png"
+          alt="Loginbutton" style="width: 70%; margin-bottom: 4%;">
+      </div>
+
+      <div id="section-left-2" class="section-left">
+        <img src="./img/note.png" alt="note" style="width: 95%;  margin-bottom: 5%;">
+      </div>
+    </div>
+
+    <div style="width: 57%; height: 92%;">
+      <div id="section-right-1" class="section-right">
+        <img class="onclickButton" data-base="databutton" id="databutton" src="./img/databutton.png" alt="databutton"
+          style="width: 50%;">
+        <img id="data1" class="data-img" src="./img/data1.jpg" alt="data1"
+          style="width:80%; top:20%; right:3%; z-index:20" />
+        <img id="data2" class="data-img" src="./img/data2.png" alt="data2"
+          style="width:70%; top:5%; right:5%; z-index:21" />
+        <img id="data3" class="data-img" src="./img/data3.png" alt="data3"
+          style="width:45%; top:5%; left:5%; z-index:22" />
+        <img id="data4" class="data-img" src="./img/data4.png" alt="data4"
+          style="width:55%; bottom:20%; left:7%; z-index:23" />
+        <img id="data5" class="data-img" src="./img/data5.png" alt="data5"
+          style="width:50%; bottom:22%; right:5%; z-index:24" />
+        <img id="loading" src="./img/loading.gif" alt="loading"
+          style="position: absolute; width:25%; display: none; z-index:25" />
+        <img id="systemnotice" class="data-img" src="./img/systemnotice.png" alt="systemnotice"
+          style="width:90%; top:10%; z-index:26" />
+        <img id="systemnotice2" class="data-img" src="./img/systemnotice2.png" alt="systemnotice2"
+          style="width:90%; top:10%; z-index:27" />
+
+        <div class="progress-group">
+          <img src="./img/progressbar_text.png" alt="progressbar_text" style="width:100%;">
+          <div class="progress-outer">
+            <div class="progress-inner">
+              <div class="progress-fill" id="fill"></div>
+              <span class="progress-text" id="label">0%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <img id="message" src="./img/message.png" alt="message"
+      style="width:30%; position: absolute; top: 2%; right: 1%; display: none; z-index: 30;" />
+    <div id="systemalert" class="data-img" style="width:33%; z-index: 30; display: flex; justify-content: center;">
+      <img src="./img/systemalert.png" alt="systemalert" style="width:100%;" />
+      <input id="birth" class="password-input" type="password" maxlength="4" placeholder="PASSWORD"
+        style="background: #FFFFFF; position: absolute; bottom: 3%; color: black;" />
+    </div>
+  </div>
+
+  <div class="section" id="section2" style="overflow: hidden;">
+    <img id="hack1" class="data-img" src="./img/hack1.gif" alt="hack1"
+      style="width:80%; bottom:-8%; right:-20%; z-index:20" />
+    <img id="hack2" class="data-img" src="./img/hack2.gif" alt="hack2" style="width:50%; top:2%; left:2%; z-index:21" />
+    <img id="hack3" class="data-img" src="./img/hack3.gif" alt="hack3"
+      style="width:45%; bottom:-15%; left:15%; z-index:22" />
+    <img id="hack4" class="data-img" src="./img/hack4.gif" alt="hack4"
+      style="width:40%; top:2%; right:2%; z-index:23" />
+    <div id="letter" class="data-img" style="width:70%; z-index: 30; display: flex; justify-content: center;">
+      <img src="./img/letter.png" alt="letter" style="width:100%;" />
+      <img class="onclickButton" data-base="letterbutton" id="letterbutton" src="./img/letterbutton.png"
+        alt="letterbutton" style="width: 40%; position: absolute; bottom: 7%;">
+    </div>
+    <img id="quiz" class="data-img" src="./img/quiz.png" alt="quiz" style="width:90%; z-index:30" />
+    <img id="finalletter" class="data-img" src="./img/finalletter.png" alt="finalletter"
+      style="width:70%; z-index:30" />
+  </div>
+
+  <div class="section" id="section3" style="overflow: hidden;">
+    <img id="turnoff" src="./img/turnoff.gif" alt="turnoff" style="width:100%; display: none; position: absolute;" />
+  </div>
+
+  <script>
+    let passwordCorrect = false;
+    let birthCorrect = false;
+
+    const executedPins = {};
+    let pin22Activated = false;
+    let systemAlertStart = false;
+    const monitoredPins = [
+      "doctormega-1_pin_22",
+      "doctormega-1_pin_23",
+      "doctormega-1_pin_24",
+      "doctormega-1_pin_25",
+    ];
+
+    const pinActions_on = {
+      "doctormega-1_pin_22": () => {
+        pin22Activated = true;
+        document.body.style.backgroundImage = "url('./img/background.png')";
+        section1.style.display = "flex";
+        $('#password').focus();
+        setTimeout(() => {
+          new Audio('./sound/narration/narration1.ogg').play();
+        }, 10000);
+      },
+      "doctormega-1_pin_23": () => {
+        systemAlertStart = true;
+        new Audio(`./sound/alert.ogg`).play();
+        $('#systemnotice2').hide();
+        document.getElementById('systemalert').classList.add('show');
+        $('#birth').focus();
+        setTimeout(() => {
+          new Audio(`./sound/message.ogg`).play();
+          $('#message').show();
+        }, 2000);
+      },
+      "doctormega-1_pin_24": () => {
+        $('#quiz').hide();
+        document.getElementById('finalletter').classList.add('show');
+        new Audio(`./sound/narration/narration4.ogg`).play();
+        setTimeout(() => {
+          new Audio(`./sound/blackout.mp3`).play();
+          triggerPinOn('doctormega-1_pin_33');
+          $('#section2').hide();
+          $('#section3').css('display', 'flex');
+          $('#turnoff').show();
+          document.body.style.backgroundImage = "none";
+          document.body.style.backgroundColor = "#000000";
+          setTimeout(() => {
+            $('#turnoff').hide();
+          }, 2500);
+          setTimeout(() => {
+            new Audio(`./sound/narration/narration5.ogg`).play();
+          }, 5500);
+          // 나레이션4 끝나고 3초 뒤로 시간 조정 필요
+        }, 6000);
+      },
+      "doctormega-1_pin_25": () => {
+        triggerPinOnAndOff('doctormega-1_pin_35');
+        triggerPinOff('doctormega-1_pin_31');
+        triggerPinOff('doctormega-1_pin_32');
+        triggerPinOff('doctormega-1_pin_33');
+        triggerPinOff('doctormega-1_pin_34'); // 총격문EM 이라는데 켠 적이 없음
+        setTimeout(() => {
+          location.reload();
+        }, 2000);
+      },
+    };
+
+    function updatePinDisplay(pinIdentifier) {
+      if (
+        window[pinIdentifier] === true &&
+        pinActions_on[pinIdentifier] &&
+        !executedPins[pinIdentifier]
+      ) {
+        executedPins[pinIdentifier] = true;
+        pinActions_on[pinIdentifier]();
+      }
+    }
+
+    $('#section0').click(function () {
+      section0.style.display = "none";
+    });
+  </script>
+  <script>
+    const buttons = document.querySelectorAll('.onclickButton');
+    buttons.forEach(button => {
+      const baseName = button.dataset.base;
+      button.addEventListener('mousedown', () => {
+        button.src = `./img/${baseName}_onclick.png`;
+      });
+      const restore = () => {
+        button.src = `./img/${baseName}.png`;
+      };
+      button.addEventListener('mouseup', restore);
+      button.addEventListener('mouseleave', restore);
+      button.addEventListener('touchstart', () => {
+        button.src = `./img/${baseName}_onclick.png`;
+      });
+      button.addEventListener('touchend', restore);
+    });
+
+
+    const passwordInput = document.getElementById('password');
+    const Loginbutton = document.getElementById('Loginbutton');
+    Loginbutton.addEventListener('click', () => checkLogin());
+    function checkLogin() {
+      if (passwordCorrect) return;
+      const val = passwordInput.value;
+      if (val === '1234') {
+        passwordCorrect = true;
+        new Audio(`./sound/complete.mp3`).play();
+        setTimeout(() => {
+          $('#section-left-1').hide();
+          $('#section-left-2').show();
+          $('#section-right-1').css('display', 'flex');
+        }, 1000);
+      } else {
+        new Audio(`./sound/wrong.ogg`).play();
+        $("#wrongOverlay")
+          .stop(true, true)
+          .fadeIn(100)
+          .fadeOut(300);
+        $("#password").addClass("shake");
+        setTimeout(() => $("#password").removeClass("shake"), 500);
+        $('#password').val('');
+        $('#password').focus();
+      }
+    }
+
+    const dataImgs = ['data1', 'data2', 'data3', 'data4', 'data5'];
+    const hackImgs = ['hack1', 'hack2', 'hack3', 'hack4'];
+    const percent = 100;
+    const duration = 6000;
+    const fill = document.getElementById('fill');
+    const label = document.getElementById('label');
+    const databutton = document.getElementById('databutton');
+    databutton.addEventListener('click', () => {
+      $('#databutton').hide();
+      fill.style.width = percent + '%';
+      let current = 0;
+      const stepTime = duration / percent;
+      const counter = setInterval(() => {
+        current++;
+        label.textContent = current + '%';
+        if (current >= percent) {
+          clearInterval(counter);
+        }
+      }, stepTime);
+      new Audio(`./sound/hack4.mp3`).play();
+      dataImgs.forEach((id, idx) => {
+        setTimeout(() => {
+          document.getElementById(id).classList.add('show');
+          new Audio(`./sound/hack${(idx % 3) + 1}.mp3`).play();
+        }, (idx + 1) * 1000);
+      });
+      setTimeout(() => {
+        $('#loading').show();
+      }, duration);
+      setTimeout(() => {
+        new Audio(`./sound/alarm.ogg`).play();
+        document.getElementById('systemnotice').classList.add('show');
+      }, duration + 2000);
+      setTimeout(() => {
+        $('#systemnotice').hide();
+        document.getElementById('systemnotice2').classList.add('show');
+        triggerPinOnAndOff('doctormega-1_pin_31');
+        new Audio('./sound/narration/narration2.ogg').play();
+      }, duration + 4000);
+    });
+
+    $(document).keyup(function (evt) {
+      if (evt.keyCode == 13) {
+        if (!passwordCorrect) {
+          checkLogin()
+        } else if (systemAlertStart) {
+          if (birthCorrect) return;
+          if (document.getElementById('birth').value == '1234') {
+            birthCorrect = true;
+            new Audio(`./sound/complete.mp3`).play();
+            $('#systemalert').hide();
+            $('#message').hide();
+            setTimeout(() => {
+              document.body.style.backgroundImage = "url('./img/hack5.gif')";
+              $('#section1').hide();
+              $('#section2').css('display', 'flex');
+              new Audio(`./sound/hack4.mp3`).play();
+              hackImgs.forEach((id, idx) => {
+                setTimeout(() => {
+                  document.getElementById(id).classList.add('show');
+                  new Audio(`./sound/hack${(idx % 3) + 1}.mp3`).play();
+                }, (idx + 1) * 1000);
+              });
+              setTimeout(() => {
+                new Audio(`./sound/complete.mp3`).play();
+                document.getElementById('letter').classList.add('show');
+              }, 7000);
+            }, 2000);
+          } else {
+            new Audio(`./sound/wrong.ogg`).play();
+            $("#wrongOverlay")
+              .stop(true, true)
+              .fadeIn(100)
+              .fadeOut(300);
+            $("#birth").addClass("shake");
+            setTimeout(() => $("#birth").removeClass("shake"), 500);
+            $('#birth').val('');
+            $('#birth').focus();
+          }
+
+        }
+      }
+    });
+
+    const letterbutton = document.getElementById('letterbutton');
+    letterbutton.addEventListener('click', () => {
+      new Audio(`./sound/complete.mp3`).play();
+      $('#letter').hide();
+      document.getElementById('quiz').classList.add('show');
+      triggerPinOn('doctormega-1_pin_32');
+      setTimeout(() => {
+        new Audio(`./sound/narration/narration3.ogg`).play();
+      }, 2000);
+    });
+  </script>
+  <script src="../script.js"></script>
+</body>
+
+</html>

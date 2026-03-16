@@ -1,0 +1,156 @@
+body {
+    background-color: black;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-attachment: fixed;
+    background-size: cover;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.section {
+    width: 100%;
+    height: 100dvh;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.section-left {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: end;
+}
+
+.section-right {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.password-input {
+    width: 64%;
+    padding: 0.75rem 1rem;
+    background: transparent;
+    border: 2px solid #ffffff80;
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 2.5rem;
+    letter-spacing: 1rem;
+    text-align: center;
+    outline: none;
+    margin-bottom: 2%;
+}
+
+.password-input::placeholder {
+    opacity: 0.8;
+    font-weight: bold;
+    letter-spacing: 0rem;
+}
+
+.password-input {
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+#wrongOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 0, 0, 0.7);
+    display: none;
+    z-index: 9999;
+}
+
+@keyframes shake {
+    0% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-10px);
+    }
+
+    50% {
+        transform: translateX(10px);
+    }
+
+    75% {
+        transform: translateX(-10px);
+    }
+
+    100% {
+        transform: translateX(0);
+    }
+}
+
+.shake {
+    animation: shake 0.5s ease;
+}
+
+.progress-group {
+    position: absolute;
+    bottom: 5%;
+    width: 80%;
+}
+
+.progress-outer {
+    margin-top: 10px;
+    background: #10A962;
+    padding: 6px;
+    border-radius: 50px;
+    width: 100%;
+}
+
+.progress-inner {
+    background: #001a33;
+    padding: 4px;
+    border-radius: 50px;
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-fill {
+    background: #10A962;
+    height: 40px;
+    width: 0%;
+    border-radius: 50px;
+    transition: width 6s linear;
+}
+
+.progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.5rem;
+    color: #fff;
+    white-space: nowrap;
+}
+
+.data-img {
+    position: absolute;
+    visibility: hidden;
+    opacity: 0;
+    transform: scale(0.3);
+    transition:
+        transform 0.1s ease-out,
+        opacity 0.2s ease-out;
+}
+
+.data-img.show {
+    visibility: visible;
+    opacity: 1;
+    transform: scale(1);
+}
