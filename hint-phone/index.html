@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#000000">
+  <link rel="apple-touch-icon" href="favicon.png">
+  <title>FANTASTRICK 3rd HINT PHONE</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css?v=127">
+</head>
+<body>
+  
+  <!-- 숨겨진 터치 영역 (왼쪽 아래) -->
+  <div class="hidden-touch-area" id="refreshTouchArea"></div>
+  <!-- 숨겨진 터치 영역 (왼쪽 위) -->
+  <div class="hidden-touch-area2" id="dmTouchArea"></div>
+
+  <!-- 메인 화면 -->
+  <div id="mainScreen" class="screen active">
+    
+    <div class="image-container">
+      <!-- 연결 상태 표시 (왼쪽 위) -->
+      <div class="connection-indicator" id="connectionIndicator"></div>
+
+      <img id="backgroundImage" src="assets/phone-img/page-start.png" alt="FANTASTRICK" class="full-screen-img">
+      
+      <div class="timer-overlay" style="display: none;">
+        <span id="timer">1:40:00</span>
+      </div>
+
+      <img class="location-img location-current" src="assets/phone-img/location1.png" alt="Location 1" style="display: none;">
+      <img class="location-img location-next" src="" alt="Location Next" style="display: none;">
+      <img class="inprogress-img" src="assets/phone-img/inprogress1.png" alt="In Progress 1" style="display: none;">
+      <img class="mission-img" src="assets/phone-img/mission1.png" alt="Mission 1" style="display: none;">
+      <img class="details-img" src="assets/phone-img/details1.png" alt="Details 1" style="display: none;">
+
+      <img class="memo-img" src="assets/phone-img/memo.png" alt="Memo" onclick="showMemo()" style="display: none;">
+      <img class="hint-img" src="assets/phone-img/hint.png" alt="Hint" onclick="showHint()" style="display: none;">
+      <div class="sns-img" style="display: none;" onclick="showSNS()">
+        <img style="width: 100%;" src="assets/phone-img/SNS-deactivate.png" alt="SNS" id="sns-button">
+        <div id="snsDot"></div>
+      </div>
+
+      <img id="questButton" class="quest-button" src="assets/quest-img/quest.png" alt="Quest" onclick="showQuest()" style="display: none;">
+    </div>
+    
+    <!-- 힌트 팝업 모달 -->
+    <div id="hintModal" class="hint-modal">
+      <img id="hintBackgroundImage" src="assets/hint-img/hintbackground.png" alt="hintbackground">
+      <img class="hint-exit-btn" src="assets/hint-img/hintexit.png" alt="Exit" onclick="closeHint()">
+
+      <div class="hint-code-title">HINT CODE</div>
+      <img class="hint-codeblock" src="assets/hint-img/hintcodeblock.png" alt="Code Block">
+      <input type="text" id="hintCodeInput" class="hint-code-input" 
+             inputmode="text" 
+             autocomplete="off" 
+             autocorrect="off" 
+             autocapitalize="off" 
+             spellcheck="false"
+             lang="en">
+      <img class="hint-enter-btn" src="assets/hint-img/hintenter.png" alt="Enter" onclick="hintEnter()">
+      
+      <img class="hint-detail-img" src="assets/hint-img/hintdetail01.png" alt="Hint Detail" style="display: none;">
+      <img class="hint-back-btn" src="assets/hint-img/back.png" alt="Back" onclick="showHintInput()" style="display: none;">
+      <img class="hint-next-btn" src="assets/hint-img/next.png" alt="Next" onclick="showHintSolution()" style="display: none;">
+    </div>
+
+    <!-- SNS 팝업 모달 -->
+    <div id="snsModal" class="sns-modal">
+      <img class="sns-exit-btn" src="assets/sns-img/exit_button.png" alt="Exit" onclick="closeSNS()">
+      <div class="sns-left-tab">
+        <img src="assets/sns-img/find_button.png" alt="Find Button" class="sns-left-tab-btn" onclick="clickSearch()" id="snsSearchBtn">
+        <img src="assets/sns-img/people_button_click.png" alt="People Button" class="sns-left-tab-btn" onclick="clickPeople()" id="snsPeopleBtn">
+        <img src="assets/sns-img/dm_button.png" alt="DM Button" class="sns-left-tab-btn" onclick="clickDM()" id="snsDMBtn">
+      </div>
+      
+      <img src="assets/sns-img/profile1.png" alt="Profile1" id="profile1">
+      <div class="thumbnail-container">
+        <div class="thumbnail-row">
+          <img src="assets/sns-img/pic1.png" alt="pic1" id="pic1" class="thumbnail" onclick="clickPic1()">
+          <img src="assets/sns-img/pic2.png" alt="pic2" id="pic2" class="thumbnail" onclick="clickPic2()">
+        </div>
+        <div class="thumbnail-row">
+          <img src="assets/sns-img/pic3.png" alt="pic3" id="pic3" class="thumbnail" onclick="clickPic3()">
+          <img src="assets/sns-img/pic4.png" alt="pic4" id="pic4" class="thumbnail" onclick="clickPic4()">
+        </div>
+      </div>
+
+      <div class="pic-detail-container">
+        <div class="pic-detail-header">
+          <img src="assets/sns-img/back_button.png" alt="back" id="pic-detail-back-btn" onclick="backPicDetail()">
+          <img src="assets/sns-img/profile_mini1.png" alt="profile-mini" id="profile-mini">
+        </div>
+        <img src="assets/sns-img/pic1_detail1.png" alt="detail" id="pic-detail">
+        <img src="assets/sns-img/prev_button.png" alt="prev" id="pic-detail-prev-btn" onclick="prevPicDetail()">
+        <img src="assets/sns-img/next_button.png" alt="next" id="pic-detail-next-btn" onclick="nextPicDetail()">
+      </div>
+
+      <div id="search-container">
+        <img src="assets/sns-img/find_msg.png" alt="search" id="search-msg">
+        <input type="text" id="search-input" class="search-input" 
+          onkeypress="searchEnter(event)"
+          inputmode="text" 
+          autocomplete="off" 
+          autocorrect="off" 
+          autocapitalize="off" 
+          spellcheck="false"
+        >
+        <img src="assets/sns-img/no_result.png" alt="search" id="search-no-result">
+        <div id="search-result-row" onclick="clickSearchResult()">
+          <img src="assets/sns-img/profile_mini2.png" alt="profile-mini" id="profile-mini2">
+          <img src="assets/sns-img/profile_mini_arrow.png" alt="arrow" id="search-arrow">
+        </div>
+        <div id="search-result-row2" onclick="clickSearchResult2()">
+          <img src="assets/sns-img/profile_mini3.png" alt="profile-mini" id="profile-mini3">
+          <img src="assets/sns-img/profile_mini_arrow.png" alt="arrow" id="search-arrow">
+        </div>
+      </div>
+
+      <div id="search-result-container">
+        <img src="assets/sns-img/profile2.png" alt="Profile2" id="profile2">
+        <img src="assets/sns-img/no_posting.png" alt="no posting" id="no-posting">
+      </div>
+      <div id="search-result-container2">
+        <div id="fantastick-container">
+          <img src="assets/sns-img/profile3.png" alt="Profile3" id="profile3">
+          <img src="assets/sns-img/follow.png" alt="follow" id="follow" onclick="clickFollow()">
+        </div>
+        <img src="assets/sns-img/no_posting.png" alt="no posting" id="no-posting">
+      </div>
+
+      <div id="dm-container">
+        <img src="assets/sns-img/no_dm.png" alt="no dm" id="no-dm">
+        <img src="assets/sns-img/dm_detail.png" alt="dm detail" id="dm-detail">
+      </div>
+    </div>
+
+    <!-- 퀘스트 팝업 모달 -->
+    <div id="questModal" class="quest-modal">
+      <img src="assets/quest-img/quest-background.png" alt="quest-background" style="width: 100%;">
+      <img class="quest-exit-btn" src="assets/quest-img/exit_button.png" alt="Exit" onclick="closeQuest()">
+
+      <div style="position: absolute; width: 96.2%; left: 2%; top: 15.5%; z-index: 1; display: flex; gap: 2.4%;">
+        <div style="width: 100%; display: flex; gap: 1.9vh; flex-direction: column;">
+          <img id="cctv-quest" src="assets/quest-img/cctv.png" alt="cctv" style="width: 100%; opacity: 0;" />
+          <img id="collector-quest" src="assets/quest-img/collector.png" alt="collector" style="width: 100%; opacity: 0;" />
+          <img id="lie-quest" src="assets/quest-img/lie.png" alt="lie" style="width: 100%; opacity: 0;" />
+          <img id="last-quest" src="assets/quest-img/last.png" alt="last" style="width: 100%; opacity: 0;" />
+          <img id="follow-quest" src="assets/quest-img/follow.png" alt="follow" style="width: 100%; opacity: 0;" />
+        </div>
+        <div style="width: 100%; display: flex; gap: 2.11vh; flex-direction: column;">
+          <img id="wedding-quest" src="assets/quest-img/wedding.png" alt="wedding" style="width: 100%; opacity: 0;" />
+          <img id="name-quest" src="assets/quest-img/name.png" alt="name" style="width: 100%; opacity: 0;" />
+          <img id="pocket-quest" src="assets/quest-img/pocket.png" alt="pocket" style="width: 100%; opacity: 0;" />
+          <img id="roch-quest" src="assets/quest-img/roch.png" alt="roch" style="width: 100%; opacity: 0;" />
+          <img id="lock-quest" src="assets/quest-img/lock.png" alt="lock" style="width: 100%; opacity: 0;" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 토스트 팝업 -->
+  <div id="questToast" class="quest-toast">
+    <div class="quest-toast-text"></div>
+  </div>
+
+  <!-- 설정 모달 -->
+  <div id="configModal">
+    <div class="modal-content">
+      <h3 style="font-size: 14px;">연결 모드 선택 ver 1.2.7</h3>
+      
+      <div class="button-group">
+        <button onclick="connectMode('websocket')" class="mode-btn websocket-btn">웹소켓모드연결</button>
+        <button onclick="connectMode('test')" class="mode-btn test-btn">테스트모드연결</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 메모 그림판 모달 -->
+  <div id="memoModal" class="memo-modal">
+    <div class="memo-content">
+      <canvas id="drawingCanvas"></canvas>
+      <div class="memo-buttons">
+        <button class="control-btn clear-btn" onclick="clearCanvas()">초기화</button>
+        <button class="close-btn" onclick="closeMemo()">&times;</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="websocket.js?v=127"></script>
+  <script src="app.js?v=127"></script>
+  <script src="script.js?v=127"></script>
+</body>
+</html>

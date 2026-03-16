@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>핀 제어 테스트</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { 
+      font-family: Arial, sans-serif; 
+      margin: 0; 
+      padding: 20px; 
+      background-color: #f5f5f5; 
+    }
+    
+    /* 메인 컨테이너 */
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      color: #333;
+      margin-bottom: 30px;
+    }
+    
+    /* 상태 표시 */
+    #connectionStatus {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .status-info {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    
+    .connected { color: #4CAF50; font-weight: bold; }
+    
+    /* 핀 제어 패널 */
+    .control-panel {
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    
+    .panel-header {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: #333;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 10px;
+    }
+    
+    /* 핀 아이템 */
+    .pin-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    
+    .pin-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px;
+      background-color: #f8f9fa;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+    
+    .pin-item:hover {
+      background-color: #e9ecef;
+      transform: translateY(-2px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .pin-info {
+      flex: 1;
+    }
+    
+    .pin-name {
+      font-size: 16px;
+      font-weight: 500;
+      color: #333;
+      margin-bottom: 4px;
+    }
+    
+    .pin-id {
+      font-size: 12px;
+      color: #666;
+    }
+    
+    .pin-actions {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    /* 토글 스위치 */
+    .toggle-switch {
+      position: relative;
+      width: 60px;
+      height: 30px;
+    }
+    
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 34px;
+    }
+    
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 22px;
+      width: 22px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    
+    input:checked + .slider {
+      background-color: #4CAF50;
+    }
+    
+    input:checked + .slider:before {
+      transform: translateX(30px);
+    }
+    
+    /* 버튼 */
+    .btn {
+      background-color: #2196F3;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 14px;
+      transition: background-color 0.3s ease;
+    }
+    
+    .btn:hover {
+      background-color: #1976D2;
+    }
+    
+    .btn-danger {
+      background-color: #f44336;
+    }
+    
+    .btn-danger:hover {
+      background-color: #d32f2f;
+    }
+    
+    /* 메시지 */
+    .message {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: #fff;
+      padding: 15px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      animation: slideIn 0.3s ease;
+      z-index: 1000;
+    }
+    
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    
+    .message.success {
+      border-left: 4px solid #4CAF50;
+    }
+    
+    .message.error {
+      border-left: 4px solid #f44336;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>핀 제어 테스트 (메모리 전용)</h1>
+    
+    <!-- 상태 표시 -->
+    <div id="connectionStatus">
+      <div class="status-info">
+        <div>상태: <span class="connected">테스트 모드 활성화</span></div>
+        <div style="font-size: 12px; color: #666; margin-top: 5px;">
+          index.html을 테스트 모드로 설정하면 자동으로 연동됩니다.
+          <br>페이지 새로고침 시 모든 상태가 초기화됩니다.
+        </div>
+      </div>
+      <div>
+        <button class="btn btn-danger" onclick="resetAll()">모든 핀 OFF로 초기화</button>
+      </div>
+    </div>
+    
+    <!-- 핀 제어 패널 -->
+    <div class="control-panel">
+      <div class="panel-header">핀 제어</div>
+      <div id="pinList" class="pin-list">
+        <!-- 핀 아이템이 여기에 생성됩니다 -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 기본 핀 설정
+    const defaultPins = [
+      { slaveID: 'streetmega', arduinoID: 'streetmega-2', pinNumber: '22', name: 'Street Pin 22' },
+      { slaveID: 'safehouse', arduinoID: 'safemega-1', pinNumber: '23', name: 'Safehouse Pin 23' },
+      { slaveID: 'safehouse', arduinoID: 'safemega-1', pinNumber: '25', name: 'Safehouse Pin 25' },
+      { slaveID: 'safehouse', arduinoID: 'safemega-1', pinNumber: '27', name: 'Safehouse Pin 27' },
+      { slaveID: 'disinfectmega-1', arduinoID: 'disinfectmega-2', pinNumber: '23', name: 'Disinfect Pin 23' },
+      { slaveID: 'streetmega', arduinoID: 'streetmega-2', pinNumber: '23', name: 'Street Pin 23' },
+      { slaveID: 'streetmega', arduinoID: 'streetmega-2', pinNumber: '24', name: 'Street Pin 24' },
+      { slaveID: 'BAR', arduinoID: 'barmega-1', pinNumber: '23', name: 'Bar Pin 23' },
+      { slaveID: 'BAR', arduinoID: 'barmega-1', pinNumber: '26', name: 'Bar Pin 26' },
+      { slaveID: 'BAR', arduinoID: 'barmega-1', pinNumber: '31', name: 'Bar Pin 31' },
+      { slaveID: 'disinfectmega-1', arduinoID: 'disinfectmega-2', pinNumber: '34', name: 'Disinfect Pin 34' },
+      { slaveID: 'safehouse', arduinoID: 'safemega-1', pinNumber: '24', name: 'Safehouse Pin 24' },
+      { slaveID: 'safehouse', arduinoID: 'safemega-1', pinNumber: '28', name: 'Safehouse Pin 28' },
+      { slaveID: 'safehouse', arduinoID: 'safemega-1', pinNumber: '30', name: 'Safehouse Pin 30' },
+      { slaveID: 'doctor', arduinoID: 'doctormega-1', pinNumber: '27', name: 'Doctor Pin 27' },
+      { slaveID: 'doctor', arduinoID: 'doctormega-1', pinNumber: '24', name: 'Doctor Pin 24' },
+      { slaveID: 'doctor', arduinoID: 'doctormega-1', pinNumber: '26', name: 'Doctor Pin 26' },
+      { slaveID: 'streetmega', arduinoID: 'streetmega-2', pinNumber: '26', name: 'Street Pin 26' },
+
+      // QUEST PIN
+      { slaveID: 'streetmega', arduinoID: 'streetmega-2', pinNumber: '28', name: 'Street Pin 28' },
+      { slaveID: 'streetmega', arduinoID: 'streetmega-2', pinNumber: '29', name: 'Street Pin 29' },
+      { slaveID: 'streetmega', arduinoID: 'streetmega-2', pinNumber: '30', name: 'Street Pin 30' },
+      { slaveID: 'streetmega', arduinoID: 'streetmega-2', pinNumber: '31', name: 'Street Pin 31' },
+      { slaveID: 'streetmega', arduinoID: 'streetmega-2', pinNumber: '32', name: 'Street Pin 32' },
+      { slaveID: 'streetmega', arduinoID: 'streetmega-2', pinNumber: '33', name: 'Street Pin 33' },
+      { slaveID: 'streetmega', arduinoID: 'streetmega-2', pinNumber: '34', name: 'Street Pin 34' },
+      { slaveID: 'streetmega', arduinoID: 'streetmega-2', pinNumber: '35', name: 'Street Pin 35' },
+      { slaveID: 'streetmega', arduinoID: 'streetmega-2', pinNumber: '36', name: 'Street Pin 36' },
+      { slaveID: 'streetmega', arduinoID: 'streetmega-2', pinNumber: '37', name: 'Street Pin 37' },
+      { slaveID: 'streetmega', arduinoID: 'streetmega-2', pinNumber: '38', name: 'Street Pin 38' },
+      { slaveID: 'streetmega', arduinoID: 'streetmega-2', pinNumber: '40', name: 'Street Pin 40' }, 
+      { slaveID: 'streetmega', arduinoID: 'streetmega-2', pinNumber: '42', name: 'Street Pin 42' }
+    ];
+    
+    // 메모리에만 저장되는 핀 상태
+    const pins = [...defaultPins];
+    const pinStates = {};
+    
+    // BroadcastChannel 초기화
+    let broadcastChannel = null;
+    if ('BroadcastChannel' in window) {
+      broadcastChannel = new BroadcastChannel('pin_control_channel');
+    }
+    
+    // 초기화
+    function init() {
+      // 모든 핀 상태를 OFF로 초기화
+      pins.forEach(pin => {
+        const pinKey = `${pin.slaveID}_${pin.arduinoID}_pin_${pin.pinNumber}`;
+        pinStates[pinKey] = false;
+      });
+      
+      renderPins();
+    }
+    
+    // 핀 렌더링
+    function renderPins() {
+      const container = document.getElementById('pinList');
+      container.innerHTML = '';
+      
+      pins.forEach((pin, index) => {
+        const pinKey = `${pin.slaveID}_${pin.arduinoID}_pin_${pin.pinNumber}`;
+        const state = pinStates[pinKey] || false;
+        
+        const pinItem = document.createElement('div');
+        pinItem.className = 'pin-item';
+        pinItem.innerHTML = `
+          <div class="pin-info">
+            <div class="pin-name">${pin.name}</div>
+            <div class="pin-id">${pin.slaveID} / ${pin.arduinoID} / Pin ${pin.pinNumber}</div>
+          </div>
+          <div class="pin-actions">
+            <label class="toggle-switch">
+              <input type="checkbox" ${state ? 'checked' : ''} 
+                     onchange="togglePin('${pin.slaveID}', '${pin.arduinoID}', '${pin.pinNumber}', this.checked)">
+              <span class="slider"></span>
+            </label>
+          </div>
+        `;
+        
+        container.appendChild(pinItem);
+      });
+    }
+    
+    // 핀 토글
+    function togglePin(slaveID, arduinoID, pinNumber, isOn) {
+      const pinKey = `${slaveID}_${arduinoID}_pin_${pinNumber}`;
+      
+      // 메모리에 상태 저장
+      pinStates[pinKey] = isOn;
+      
+      // 변경 이벤트
+      const changeEvent = {
+        slaveID: slaveID,
+        arduinoID: arduinoID,
+        pinNumber: pinNumber,
+        state: isOn ? 'on' : 'off',
+        timestamp: new Date().toISOString()
+      };
+      
+      // BroadcastChannel로 전송
+      if (broadcastChannel) {
+        broadcastChannel.postMessage({
+          type: 'pin_change',
+          data: changeEvent
+        });
+      }
+      
+      // 메시지 표시
+      showMessage(`Pin ${pinNumber} → ${isOn ? 'ON' : 'OFF'}`, 'success');
+    }
+    
+    // 모든 핀 초기화
+    function resetAll() {
+      if (confirm('모든 핀을 OFF 상태로 초기화하시겠습니까?')) {
+        // 모든 핀 상태를 OFF로 설정
+        pins.forEach(pin => {
+          const pinKey = `${pin.slaveID}_${pin.arduinoID}_pin_${pin.pinNumber}`;
+          pinStates[pinKey] = false;
+          
+          // 각 핀의 상태 변경 알림
+          if (broadcastChannel) {
+            broadcastChannel.postMessage({
+              type: 'pin_change',
+              data: {
+                slaveID: pin.slaveID,
+                arduinoID: pin.arduinoID,
+                pinNumber: pin.pinNumber,
+                state: 'off',
+                timestamp: new Date().toISOString()
+              }
+            });
+          }
+        });
+        
+        renderPins();
+        showMessage('모든 핀이 OFF로 초기화되었습니다.', 'success');
+      }
+    }
+    
+    // 메시지 표시
+    function showMessage(text, type) {
+      const message = document.createElement('div');
+      message.className = `message ${type}`;
+      message.textContent = text;
+      
+      document.body.appendChild(message);
+      
+      // 3초 후 제거
+      setTimeout(() => {
+        message.style.animation = 'slideIn 0.3s ease reverse';
+        setTimeout(() => message.remove(), 300);
+      }, 3000);
+    }
+    
+    // 페이지 로드 시 초기화
+    window.onload = init;
+  </script>
+</body>
+</html>
