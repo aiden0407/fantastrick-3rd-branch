@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>dlc2</title>
+  <script src="../jquery.min.js" type='text/javascript'></script>
+  <!-- 공통 arduinoContainer CSS 부분 -->
+  <link rel="stylesheet" href="../style.css" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+
+<body>
+  <div id="overlay">연결이 끊겼습니다.</div>
+  <div id="arduinoContainer"></div>
+
+  <!-- 숨겨진 리셋 버튼 -->
+  <div id="hiddenResetButton" style="position: fixed; top: 0; right: 0; width: 100px; height: 100px; cursor: pointer; z-index: 9999; -webkit-tap-highlight-color: transparent; user-select: none;"></div>
+
+  <div id="section0"
+    style="width:100%; height:100dvh; display: flex; justify-content: center; align-items: center; color: red; font-size: 40px;">
+    정상적인 초기화를 위해 화면을 터치해 주세요
+  </div>
+
+  <!-- 여기에 새로운 섹션들 추가 -->
+  <div id="introSection" class="section" style="display: none; opacity: 0; transition: opacity 2s;">
+    <img id="introGif" src="./img/intropage.gif" alt="intropage"
+      style="width: 100%; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;">
+  </div>
+
+  <div id="mainSection" class="section" style="display: none; opacity: 0; transition: opacity 1s;">
+    <div style="width: 100%; height: 100%; position: relative;">
+      <img src="./img/mainpage_background.png" alt="background" style="width: 100%; height: 100%; object-fit: cover;">
+      <!-- 타이핑 섹션 -->
+      <div id="typingText" style="position: absolute; top: 28%; left: 10%;
+                                   color: white; font-size: 33px; line-height: 1.8;
+                                   white-space: pre-line; font-family: 'Pretendard', sans-serif;
+                                   transition: opacity 1s;"></div>
+
+      <!-- 예비 사격 섹션 -->
+      <div id="practiceSection" style="position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%);
+                                    display: none; flex-direction: column; align-items: center;
+                                    opacity: 0; transition: opacity 1s; width: 80%; gap: 30px;">
+        <div
+          style="color: white; font-size: 33px; font-family: 'Pretendard', sans-serif; font-weight: bold; text-align: center; line-height: 1.3; gap: 20px; display: flex; flex-direction: column; align-items: center;">
+          <div>예비 사격을 실시합니다</div>
+          <div><span style="color: yellow;">불이 들어온 타겟</span>은 <span style="color: yellow;">사격이 가능</span>하고 피격
+            시<br />포인트가 올라갑니다.</div>
+          <div><span style="color: yellow;">피격된 타겟은 잠시 불이 꺼지며,<br />다시 불이 켜질 때까지 피격이 판정되지 않습니다.</span></div>
+          <div style="color: yellow; font-size: 44px;">본 사격은 1분간 진행 됩니다.</div>
+        </div>
+        <img src="./img/initiating_button.png" alt="시작 버튼"
+          style="width: 300px; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent;"
+          id="startButton">
+      </div>
+
+      <!-- 본사격 섹션 -->
+      <div id="shootingSection" class="section"
+        style="position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%);
+      display: none; flex-direction: column; align-items: center; font-family: 'Pretendard', sans-serif;">
+        <!-- 타이머와 점수 -->
+        <div
+          style="z-index: 10; background-color: rgba(0, 0, 0, 0.5); width: 50%; padding: 20px 0; display: flex; justify-content: center; align-items: center;">
+          <div id="timer"
+            style="width: 75%; color: yellow; font-size: 100px; font-family: 'Pretendard', sans-serif; font-weight: bold; text-shadow: 0 0 10px black; margin-left: 25px;">
+            1:00:00</div>
+        </div>
+        <div
+          style="text-align: center; z-index: 10; background-color: rgba(0, 0, 0, 0.5); width: 50%; padding: 20px 0; margin: 20px 0; display: flex;">
+          <div id="score"
+            style="text-align: end; padding-right: 30px; width: 50%; color: orange; font-size: 60px; font-family: 'Pretendard', sans-serif; font-weight: bold; text-shadow: 0 0 10px black;">
+            0</div>
+            <div
+            style="text-align: center; width: 50%; color: orange; font-size: 50px; font-family: 'Pretendard', sans-serif; font-weight: bold; text-shadow: 0 0 10px black;">
+            point(s)</div>
+        </div>
+
+        <!-- 점수표 -->
+        <div style="width: 80%; color: white; font-size: 30px; font-family: 'Pretendard', sans-serif; text-align: center; line-height: 2; z-index: 10;
+                        text-shadow: 0 0 10px black;">
+          <div>[ 1st FLOOR ] 1 point&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;[ 2nd FLOOR ] 10 points</div>
+          <div>[ 3rd FLOOR ] 15 points&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;[ LONG RANGE ] 50 points</div>
+        </div>
+      </div>
+
+      <!-- 종료 섹션 -->
+      <div id="endSection" class="section"
+        style="position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%);
+        display: none; flex-direction: column; align-items: center; font-family: 'Pretendard', sans-serif;">
+
+        <!-- 점수 표시 -->
+        <div style="text-align: center; z-index: 10; background-color: rgba(0, 0, 0, 0.5); width: 50%; padding: 20px 0; margin: 20px 0; display: flex;">
+          <div id="endScore"
+            style="text-align: end; padding-right: 30px; width: 50%; color: orange; font-size: 60px; font-family: 'Pretendard', sans-serif; font-weight: bold; text-shadow: 0 0 10px black;">
+            0</div>
+          <div
+            style="text-align: center; width: 50%; color: orange; font-size: 50px; font-family: 'Pretendard', sans-serif; font-weight: bold; text-shadow: 0 0 10px black;">
+            point(s)</div>
+        </div>
+
+        <!-- 종료 메시지 -->
+        <div style="text-align: center; color: white; font-size: 40px; line-height: 1.8; text-shadow: 0 0 10px black; margin-top: 30px;">
+          <div>훈련 프로그램이 종료 되었습니다.</div>
+          <div>NERC 요원님들의 활약을 기대하겠습니다.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 카운트다운 팝업 -->
+  <div id="countdownPopup" style="position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+                                 background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center;
+                                 z-index: 1000;">
+    <div id="countdownNumber"
+      style="color: yellow; font-size: 300px; font-family: 'Pretendard', sans-serif; font-weight: bold;">3</div>
+  </div>
+
+  <!-- 종료 팝업 -->
+  <div id="endPopup" style="position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+                           display: none; justify-content: center; align-items: center; z-index: 1001;
+                           background: rgba(0,0,0,0.8);">
+    <div style="width: 82%; position: relative; display: flex; justify-content: center; align-items: center;">
+      <img src="./img/popup.png" alt="종료" style="width: 100%;">
+
+      <!-- 점수 표시 -->
+      <div style="position: absolute; top: 4.5%; display: flex; align-items: center; gap: 15px;">
+        <div style="color: orange; font-size: 30px; font-family: 'Pretendard', sans-serif; font-weight: bold; text-shadow: 0 0 10px black;">
+          트레이닝 결과 :
+        </div>
+        <div id="popupScore" style="color: orange; font-size: 40px; font-family: 'Pretendard', sans-serif; font-weight: bold; text-shadow: 0 0 15px black;">
+          0
+        </div>
+        <div style="color: orange; font-size: 30px; font-family: 'Pretendard', sans-serif; font-weight: bold; text-shadow: 0 0 10px black;">
+          point(s)
+        </div>
+      </div>
+
+      <!-- 버튼들 -->
+      <div style="width: 80%; height: 140px; position: absolute; bottom: 8%; display: flex; justify-content: space-between; align-items: center;">
+        <div id="restartButton" style="width: 44%; height: 100%; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent;"></div>
+        <div id="exitButton" style="width: 44%; height: 100%; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 초기화 중 섹션 -->
+  <div id="section5" style="width:100%; height:100dvh; display: none; justify-content: center; align-items: center; color: white; font-size: 60px; font-family: 'Pretendard', sans-serif; background-color: black; position: fixed; top: 0; left: 0; z-index: 9999;">
+    초기화 중...
+  </div>
+
+  <!-- 재시작 초기화 중 팝업 -->
+  <div id="restartInitPopup" style="position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+                             display: none; justify-content: center; align-items: center; z-index: 1002;
+                             background: rgba(0,0,0,0.8);">
+    <div
+      style="width: 80px; height: 80px; border: 8px solid rgba(255, 255, 255, 0.2); border-top: 8px solid white; border-radius: 50%; animation: spin 1s linear infinite;">
+    </div>
+  </div>
+
+  <style>
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+
+  <script>
+    // 초기화 상태 변수
+    let isInitialized = false;
+    
+    // BGM 오디오 설정
+    const BGM1 = new Audio('./bgm/BGM1.mp3');
+    BGM1.loop = true;
+    const BGM2 = new Audio('./bgm/BGM2.mp3');
+    BGM2.loop = true;
+
+    // 효과음 설정
+    const completeSound = new Audio('./effect/complete.mp3');
+    const gunSounds = [
+      new Audio('./effect/gun1.ogg'),
+      new Audio('./effect/gun2.ogg'),
+      new Audio('./effect/gun3.ogg'),
+      new Audio('./effect/gun4.ogg'),
+      new Audio('./effect/gun5.ogg')
+    ];
+    const hitSounds = [
+       new Audio('./effect/zombie1.mp3'),
+       new Audio('./effect/zombie2.mp3'),
+       new Audio('./effect/zombie3.mp3'),
+       new Audio('./effect/zombie4.mp3'),
+       new Audio('./effect/zombie5.mp3')
+      //new Audio('./effect/gun1.ogg'),
+      //new Audio('./effect/gun2.ogg'),
+      //new Audio('./effect/gun3.ogg'),
+      //new Audio('./effect/gun4.ogg'),
+      //new Audio('./effect/gun5.ogg')
+    ];
+
+    // 랜덤 총소리 재생 함수
+    function playRandomGunSound() {
+      const randomIndex = Math.floor(Math.random() * gunSounds.length);
+      gunSounds[randomIndex].currentTime = 0;
+      gunSounds[randomIndex].play();
+    }
+
+    // 랜덤 피격음 재생 함수
+    function playRandomHitSound() {
+      const randomIndex = Math.floor(Math.random() * hitSounds.length);
+      hitSounds[randomIndex].currentTime = 0;
+      hitSounds[randomIndex].play();
+    }
+
+    // 타겟 활성화 상태
+    let target22Active = false;
+    let target23Active = false;
+    let target24Active = false;
+    let target25Active = false;
+    let target26Active = false;
+    let target27Active = false;
+    let target28Active = false;
+    let target29Active = false;
+    let target30Active = false;
+    let target31Active = false;
+    let target32Active = false;
+    let target33Active = false;
+    let target34Active = false;
+
+    // 점수 및 타이머
+    let totalScore = 0;
+    let dlc2TimerInterval = null;
+    let remainingTime = 6000; // 1분 = 6000 (0.01초 단위)
+    let allTargetsHit = false; // 모든 타겟이 꺼졌는지 체크
+    let isFirstRound = true; // 첫 번째 라운드 여부
+    let isGameActive = false; // 게임 진행 중 여부
+    let introGifClicked = false; // GIF 중복 클릭 방지
+    let pin35Detected = false; // pin_35 감지 여부
+    let pin36TriggerTime = null; // GUNmega-1_pin_36이 켜진 시간
+    let isCountingDown = false; // 카운트다운 진행 중 여부
+
+    // 타이핑 애니메이션 함수
+    function typeText(element, text, speed = 50) {
+      let index = 0;
+      element.textContent = '';
+
+      return new Promise((resolve) => {
+        const interval = setInterval(() => {
+          if (index < text.length) {
+            element.textContent += text[index];
+            index++;
+          } else {
+            clearInterval(interval);
+            resolve();
+          }
+        }, speed);
+      });
+    }
+
+    // HTML 태그를 지원하는 타이핑 애니메이션 함수 (실시간 색상 적용)
+    function typeTextHTML(element, html, speed = 50) {
+      // HTML에서 순수 텍스트 추출
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = html;
+      const fullText = tempDiv.textContent;
+
+      // (Hostile Tier-3) 위치 찾기
+      const highlightText = "(Hostile Tier-3)";
+      const highlightStart = fullText.indexOf(highlightText);
+      const highlightEnd = highlightStart + highlightText.length;
+
+      let index = 0;
+      element.innerHTML = '';
+
+      return new Promise((resolve) => {
+        const interval = setInterval(() => {
+          if (index < fullText.length) {
+            const currentText = fullText.substring(0, index + 1);
+
+            // 현재까지 타이핑된 텍스트를 HTML로 변환
+            if (index >= highlightStart && index < highlightEnd) {
+              // 하이라이트 영역에 진입했을 때
+              const before = fullText.substring(0, highlightStart);
+              const highlight = fullText.substring(highlightStart, index + 1);
+              element.innerHTML = before + '<span style="color: yellow;">' + highlight + '</span>';
+            } else if (index >= highlightEnd) {
+              // 하이라이트 영역을 지나쳤을 때
+              const before = fullText.substring(0, highlightStart);
+              const highlight = fullText.substring(highlightStart, highlightEnd);
+              const after = fullText.substring(highlightEnd, index + 1);
+              element.innerHTML = before + '<span style="color: yellow;">' + highlight + '</span>' + after;
+            } else {
+              // 하이라이트 영역 이전
+              element.textContent = currentText;
+            }
+
+            index++;
+          } else {
+            clearInterval(interval);
+            element.innerHTML = html;
+            resolve();
+          }
+        }, speed);
+      });
+    }
+
+    // 여러 개의 하이라이트를 지원하는 타이핑 함수
+    function typeTextHTML2(element, html, speed = 50) {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = html;
+      const fullText = tempDiv.textContent;
+
+      // 노란색 영역들 찾기
+      const highlights = [
+        "불이 들어온 타겟을 피격",
+        "포인트를 획득",
+        "예비 사격과 본 사격으로 구성"
+      ];
+
+      const highlightRanges = highlights.map(text => {
+        const start = fullText.indexOf(text);
+        return { start, end: start + text.length, text };
+      }).filter(range => range.start !== -1);
+
+      let index = 0;
+      element.innerHTML = '';
+
+      return new Promise((resolve) => {
+        const interval = setInterval(() => {
+          if (index < fullText.length) {
+            // 현재 위치에서 텍스트를 재구성
+            let result = '';
+            let lastEnd = 0;
+
+            highlightRanges.forEach(range => {
+              if (index >= range.end) {
+                // 완전히 지나간 하이라이트
+                result += fullText.substring(lastEnd, range.start);
+                result += '<span style="color: yellow;">' + fullText.substring(range.start, range.end) + '</span>';
+                lastEnd = range.end;
+              } else if (index >= range.start && index < range.end) {
+                // 현재 타이핑 중인 하이라이트
+                result += fullText.substring(lastEnd, range.start);
+                result += '<span style="color: yellow;">' + fullText.substring(range.start, index + 1) + '</span>';
+                lastEnd = index + 1;
+              }
+            });
+
+            // 나머지 텍스트
+            if (lastEnd <= index) {
+              result += fullText.substring(lastEnd, index + 1);
+            }
+
+            element.innerHTML = result || fullText.substring(0, index + 1);
+            index++;
+          } else {
+            clearInterval(interval);
+            element.innerHTML = html;
+            resolve();
+          }
+        }, speed);
+      });
+    }
+
+    // 핀 상태 변수들
+    let pin22Activated = false;
+    let pin23Activated = false;
+    let pin24Activated = false;
+    let pin25Activated = false;
+    let pin26Activated = false;
+    let pin27Activated = false;
+    let pin28Activated = false;
+    let pin29Activated = false;
+    let pin30Activated = false;
+    let pin31Activated = false;
+    let pin32Activated = false;
+    let pin33Activated = false;
+    let pin34Activated = false;
+    let pin35Activated = false;
+
+    // GUNmega-2 read 핀 모니터링 (22~35)
+    const monitoredPins = [
+      "GUNmega-2_pin_22",
+      "GUNmega-2_pin_23",
+      "GUNmega-2_pin_24",
+      "GUNmega-2_pin_25",
+      "GUNmega-2_pin_26",
+      "GUNmega-2_pin_27",
+      "GUNmega-2_pin_28",
+      "GUNmega-2_pin_29",
+      "GUNmega-2_pin_30",
+      "GUNmega-2_pin_31",
+      "GUNmega-2_pin_32",
+      "GUNmega-2_pin_33",
+      "GUNmega-2_pin_34",
+      "GUNmega-2_pin_35"
+    ];
+
+    // 핀 액션 정의
+    const pinActions_on = {
+      "GUNmega-2_pin_22": () => {
+        if (!pin22Activated && target22Active) {
+          pin22Activated = true;
+          console.log("Target 22 hit!");
+
+          // 총소리 재생
+          playRandomGunSound();
+
+          // 타겟 LED OFF (2초)
+          triggerPinOff('GUNmega-1_pin_22');
+
+          setTimeout(() => {
+            // 타겟 LED 다시 ON
+            triggerPinOn('GUNmega-1_pin_22');
+            pin22Activated = false;
+          }, 2000);
+        }
+      },
+      "GUNmega-2_pin_23": () => {
+        if (!pin23Activated && target23Active) {
+          pin23Activated = true;
+          console.log("Target 23 hit!");
+
+          // 총소리 재생
+          playRandomGunSound();
+
+          // 타겟 LED OFF (2초)
+          triggerPinOff('GUNmega-1_pin_23');
+
+          setTimeout(() => {
+            // 타겟 LED 다시 ON
+            triggerPinOn('GUNmega-1_pin_23');
+            pin23Activated = false;
+          }, 2000);
+        }
+      },
+      "GUNmega-2_pin_24": () => {
+        if (!pin24Activated && target24Active) {
+          pin24Activated = true;
+          console.log("Target 24 hit!");
+
+          // 총소리 재생
+          playRandomGunSound();
+
+          // 타겟 LED OFF (2초)
+          triggerPinOff('GUNmega-1_pin_24');
+
+          setTimeout(() => {
+            // 타겟 LED 다시 ON
+            triggerPinOn('GUNmega-1_pin_24');
+            pin24Activated = false;
+          }, 2000);
+        }
+      },
+      "GUNmega-2_pin_25": () => {
+        if (!pin25Activated && target25Active && isGameActive && !isCountingDown) {
+          pin25Activated = true;
+          console.log("Target 25 hit!");
+
+          // 피격음 재생
+          playRandomHitSound();
+
+          // 점수 추가 (1 point)
+          updateScore(1);
+
+          // 타겟 LED OFF
+          triggerPinOff('GUNmega-1_pin_25');
+          target25Active = false;
+
+          if (isFirstRound) {
+            // 첫 번째 라운드: 꺼지면 끝
+            checkAllTargetsOff();
+          } else {
+            // 두 번째 라운드 이후: 3초 후 다시 켜기
+            setTimeout(() => {
+              if (isGameActive) {
+                triggerPinOn('GUNmega-1_pin_25');
+                target25Active = true;
+                pin25Activated = false;
+              }
+            }, 3000);
+          }
+        }
+      },
+      "GUNmega-2_pin_26": () => {
+        if (!pin26Activated && target26Active && isGameActive && !isCountingDown) {
+          pin26Activated = true;
+          console.log("Target 26 hit!");
+
+          // 피격음 재생
+          playRandomHitSound();
+
+          // 점수 추가 (1 point)
+          updateScore(1);
+
+          // 타겟 LED OFF
+          triggerPinOff('GUNmega-1_pin_26');
+          target26Active = false;
+
+          if (isFirstRound) {
+            checkAllTargetsOff();
+          } else {
+            setTimeout(() => {
+              if (isGameActive) {
+                triggerPinOn('GUNmega-1_pin_26');
+                target26Active = true;
+                pin26Activated = false;
+              }
+            }, 3000);
+          }
+        }
+      },
+      "GUNmega-2_pin_27": () => {
+        if (!pin27Activated && target27Active && isGameActive && !isCountingDown) {
+          pin27Activated = true;
+          console.log("Target 27 hit!");
+
+          // 피격음 재생
+          playRandomHitSound();
+
+          // 점수 추가 (1 point)
+          updateScore(1);
+
+          // 타겟 LED OFF
+          triggerPinOff('GUNmega-1_pin_27');
+          target27Active = false;
+
+          if (isFirstRound) {
+            checkAllTargetsOff();
+          } else {
+            setTimeout(() => {
+              if (isGameActive) {
+                triggerPinOn('GUNmega-1_pin_27');
+                target27Active = true;
+                pin27Activated = false;
+              }
+            }, 3000);
+          }
+        }
+      },
+      "GUNmega-2_pin_28": () => {
+        if (!pin28Activated && target28Active && isGameActive && !isCountingDown) {
+          pin28Activated = true;
+          console.log("Target 28 hit!");
+
+          // 피격음 재생
+          playRandomHitSound();
+
+          // 점수 추가 (10 point)
+          updateScore(10);
+
+          // 타겟 LED OFF
+          triggerPinOff('GUNmega-1_pin_28');
+          target28Active = false;
+
+          if (isFirstRound) {
+            checkAllTargetsOff();
+          } else {
+            setTimeout(() => {
+              if (isGameActive) {
+                triggerPinOn('GUNmega-1_pin_28');
+                target28Active = true;
+                pin28Activated = false;
+              }
+            }, 5000);
+          }
+        }
+      },
+      "GUNmega-2_pin_29": () => {
+        if (!pin29Activated && target29Active && isGameActive && !isCountingDown) {
+          pin29Activated = true;
+          console.log("Target 29 hit!");
+
+          // 피격음 재생
+          playRandomHitSound();
+
+          // 점수 추가 (10 point)
+          updateScore(10);
+
+          // 타겟 LED OFF
+          triggerPinOff('GUNmega-1_pin_29');
+          target29Active = false;
+
+          if (isFirstRound) {
+            checkAllTargetsOff();
+          } else {
+            setTimeout(() => {
+              if (isGameActive) {
+                triggerPinOn('GUNmega-1_pin_29');
+                target29Active = true;
+                pin29Activated = false;
+              }
+            }, 5000);
+          }
+        }
+      },
+      "GUNmega-2_pin_30": () => {
+        if (!pin30Activated && target30Active && isGameActive && !isCountingDown) {
+          pin30Activated = true;
+          console.log("Target 30 hit!");
+
+          // 피격음 재생
+          playRandomHitSound();
+
+          // 점수 추가 (15 point)
+          updateScore(15);
+
+          // 타겟 LED OFF
+          triggerPinOff('GUNmega-1_pin_30');
+          target30Active = false;
+
+          if (isFirstRound) {
+            checkAllTargetsOff();
+          } else {
+            setTimeout(() => {
+              if (isGameActive) {
+                triggerPinOn('GUNmega-1_pin_30');
+                target30Active = true;
+                pin30Activated = false;
+              }
+            }, 8000);
+          }
+        }
+      },
+      "GUNmega-2_pin_31": () => {
+        if (!pin31Activated && target31Active && isGameActive && !isCountingDown) {
+          pin31Activated = true;
+          console.log("Target 31 hit!");
+
+          // 피격음 재생
+          playRandomHitSound();
+
+          // 점수 추가 (15 point)
+          updateScore(15);
+
+          // 타겟 LED OFF
+          triggerPinOff('GUNmega-1_pin_31');
+          target31Active = false;
+
+          if (isFirstRound) {
+            checkAllTargetsOff();
+          } else {
+            setTimeout(() => {
+              if (isGameActive) {
+                triggerPinOn('GUNmega-1_pin_31');
+                target31Active = true;
+                pin31Activated = false;
+              }
+            }, 8000);
+          }
+        }
+      },
+      "GUNmega-2_pin_32": () => {
+        if (!pin32Activated && target32Active && isGameActive && !isCountingDown) {
+          pin32Activated = true;
+          console.log("Target 32 hit!");
+
+          // 피격음 재생
+          playRandomHitSound();
+
+          // 점수 추가 (50 point)
+          updateScore(50);
+
+          // 타겟 LED OFF
+          triggerPinOff('GUNmega-1_pin_32');
+          target32Active = false;
+
+          if (isFirstRound) {
+            checkAllTargetsOff();
+          } else {
+            setTimeout(() => {
+              if (isGameActive) {
+                triggerPinOn('GUNmega-1_pin_32');
+                target32Active = true;
+                pin32Activated = false;
+              }
+            }, 10000);
+          }
+        }
+      },
+      "GUNmega-2_pin_33": () => {
+        if (!pin33Activated && target33Active && isGameActive && !isCountingDown) {
+          pin33Activated = true;
+          console.log("Target 33 hit!");
+
+          // 피격음 재생
+          playRandomHitSound();
+
+          // 점수 추가 (50 point)
+          updateScore(50);
+
+          // 타겟 LED OFF
+          triggerPinOff('GUNmega-1_pin_33');
+          target33Active = false;
+
+          if (isFirstRound) {
+            checkAllTargetsOff();
+          } else {
+            setTimeout(() => {
+              if (isGameActive) {
+                triggerPinOn('GUNmega-1_pin_33');
+                target33Active = true;
+                pin33Activated = false;
+              }
+            }, 10000);
+          }
+        }
+      },
+      "GUNmega-2_pin_34": () => {
+        if (!pin34Activated && target34Active && isGameActive && !isCountingDown) {
+          pin34Activated = true;
+          console.log("Target 34 hit!");
+
+          // 피격음 재생
+          playRandomHitSound();
+
+          // 점수 추가 (50 point)
+          updateScore(50);
+
+          // 타겟 LED OFF
+          triggerPinOff('GUNmega-1_pin_34');
+          target34Active = false;
+
+          if (isFirstRound) {
+            checkAllTargetsOff();
+          } else {
+            setTimeout(() => {
+              if (isGameActive) {
+                triggerPinOn('GUNmega-1_pin_34');
+                target34Active = true;
+                pin34Activated = false;
+              }
+            }, 10000);
+          }
+        }
+      },
+      "GUNmega-2_pin_35": () => {
+        if (!pin35Activated) {
+          pin35Activated = true;
+          pin35Detected = true; // pin_35 감지 플래그 설정
+          console.log("Pin 35 activated");
+
+          // BGM1 재생
+          BGM1.play();
+
+          // GUNmega-1_pin_37 ON
+          if (typeof triggerPinOn === 'function') {
+            triggerPinOn('GUNmega-1_pin_37');
+          } else {
+            console.warn('triggerPinOn 함수가 아직 로드되지 않았습니다.');
+          }
+
+          // intropage.gif 페이드인
+          const introSection = document.getElementById('introSection');
+          setTimeout(() => {
+            introSection.style.opacity = '1';
+            introSection.style.display = 'flex';
+          }, 100);
+        }
+      }
+    };
+
+    // 핀 상태 업데이트 함수 (test)
+    // function updatePinDisplay(pinIdentifier) {
+    //   if (pinActions_on[pinIdentifier] && window[pinIdentifier] === true) {
+    //     pinActions_on[pinIdentifier]();
+    //   }
+    // }
+    // setInterval(() => {
+    //   Object.keys(pinActions_on).forEach(updatePinDisplay);
+    // }, 200);
+
+    // 핀 상태 업데이트 함수 (real)
+    function updatePinDisplay(pinIdentifier) {
+      if (!isInitialized) return;
+
+      if (window[pinIdentifier] === true) {
+        if (pinActions_on[pinIdentifier]) {
+          pinActions_on[pinIdentifier]();
+        }
+      }
+    }
+
+    // 초기화 화면 클릭 이벤트
+    $('#section0').click(function () {
+      isInitialized = true; // 초기화 완료
+      section0.style.display = "none";
+      // 다음 섹션으로 이동
+    });
+
+    // GIF 클릭 이벤트
+    $('#introGif').click(function () {
+      // pin_35가 감지되지 않았으면 무시
+      if (!pin35Detected) {
+        console.log("Pin 35가 아직 감지되지 않았습니다.");
+        return;
+      }
+
+      // 중복 클릭 방지
+      if (introGifClicked) {
+        console.log("이미 클릭되었습니다.");
+        return;
+      }
+      introGifClicked = true;
+
+      // 효과음 재생
+      completeSound.play();
+
+      // introSection 페이드아웃
+      introSection.style.opacity = '0';
+
+      setTimeout(() => {
+        introSection.style.display = 'none';
+
+        // mainSection 페이드인
+        mainSection.style.display = 'flex';
+        setTimeout(() => {
+          mainSection.style.opacity = '1';
+        }, 50);
+
+        // 타이핑 애니메이션 시작 (HTML 형식으로 변경)
+        const textHTML1 = `최근 보고된 바에 따르면 [ 검 열 ] 도시 전역에
+Z-형 바이러스 [ 검 열 ] 이 급속도로 확산 중이라고 합니다.
+
+분석 결과 감염자 중 극도의 공격성<span style="color: yellow;">(Hostile Tier-3)</span> 을 보이는
+개체가 급증했고, 본 작전은 이러한 고위험 감염자들을
+신속히 식별·제압하기 위한 실전 기반 전술 사격 훈련입니다.`;
+
+        const textHTML2 = `근 · 중거리 상황에서의 즉각적 정밀 사격 능력 향상 및
+좁은 도시 지역에서의 전술적 대응 능력 강화를 위한
+실제 임무 환경 타겟 시뮬레이션을 진행 합니다.
+
+<span style="color: yellow;">불이 들어온 타겟을 피격</span>하여 <span style="color: yellow;">포인트를 획득</span>하시기 바랍니다.
+본 프로그램은 <span style="color: yellow;">예비 사격과 본 사격으로 구성</span>되었습니다.`;
+
+        const typingTextElement = document.getElementById('typingText');
+
+        // 첫 번째 텍스트 타이핑
+        typeTextHTML(typingTextElement, textHTML1, 50).then(() => {
+          // 5초 대기 후 두 번째 텍스트 타이핑
+          setTimeout(() => {
+            typeTextHTML2(typingTextElement, textHTML2, 50).then(() => {
+              // 두 번째 타이핑 완료 후 5초 대기
+              setTimeout(() => {
+                // 텍스트 페이드아웃
+                typingTextElement.style.opacity = '0';
+
+                setTimeout(() => {
+                  // "예비 사격을 실시합니다" 페이드인
+                  const practiceSection = document.getElementById('practiceSection');
+                  practiceSection.style.display = 'flex';
+                  practiceSection.style.opacity = '1';
+
+                  // 타겟 활성화 (LED ON)
+                  target22Active = true;
+                  target23Active = true;
+                  target24Active = true;
+
+                  triggerPinOn('GUNmega-1_pin_22');
+                  setTimeout(()=>{
+                    triggerPinOn('GUNmega-1_pin_23');
+                  }, 100)
+                  setTimeout(()=>{
+                    triggerPinOn('GUNmega-1_pin_24');
+                  }, 200)
+
+                  console.log("타겟 22, 23, 24 활성화!");
+                }, 1000);
+              }, 5000);
+            });
+          }, 5000);
+        });
+      }, 1000);
+    });
+
+    // 시작 버튼 클릭 이벤트
+    $('#startButton').click(function () {
+      // 타겟 LED OFF
+      setTimeout(()=>{
+        triggerPinOff('GUNmega-1_pin_22');
+      }, 2100)
+      setTimeout(()=>{
+        triggerPinOff('GUNmega-1_pin_23');
+      }, 2200)
+      setTimeout(()=>{
+        triggerPinOff('GUNmega-1_pin_24');
+      }, 2300)
+
+      target22Active = false;
+      target23Active = false;
+      target24Active = false;
+
+      // practiceSection 페이드아웃
+      const practiceSection = document.getElementById('practiceSection');
+      practiceSection.style.opacity = '0';
+
+      setTimeout(() => {
+        practiceSection.style.display = 'none';
+
+        // BGM 전환 (BGM1 → BGM2)
+        BGM1.pause();
+        BGM1.currentTime = 0;
+        BGM2.play();
+
+        // GUNmega-1_pin_35 ON (1초)
+        triggerPinOn('GUNmega-1_pin_35');
+        setTimeout(() => {
+          triggerPinOff('GUNmega-1_pin_35');
+        }, 1000);
+
+        // shootingSection 표시
+        const shootingSection = document.getElementById('shootingSection');
+        shootingSection.style.display = 'flex';
+
+        // 카운트다운 시작
+        setTimeout(() => {
+          startCountdown();
+        }, 1500);
+      }, 1000);
+    });
+
+    // 카운트다운 함수
+    function startCountdown() {
+      isCountingDown = true; // 카운트다운 시작
+
+      const countdownPopup = document.getElementById('countdownPopup');
+      const countdownNumber = document.getElementById('countdownNumber');
+
+      countdownPopup.style.display = 'flex';
+
+      let count = 3;
+      countdownNumber.textContent = count;
+
+      const countInterval = setInterval(() => {
+        count--;
+        if (count > 0) {
+          countdownNumber.textContent = count;
+        } else {
+          clearInterval(countInterval);
+          countdownPopup.style.display = 'none';
+          isCountingDown = false; // 카운트다운 종료
+
+          // 실사격 화면으로 전환
+          startShooting();
+        }
+      }, 1000);
+    }
+
+    // 모든 타겟이 꺼졌는지 확인하는 함수
+    function checkAllTargetsOff() {
+      if (!target25Active && !target26Active && !target27Active && !target28Active &&
+          !target29Active && !target30Active && !target31Active && !target32Active &&
+          !target33Active && !target34Active) {
+
+        console.log("모든 타겟 OFF! 다음 라운드 준비");
+	
+        // GUNmega-1_pin_35를 1초간 ON
+        
+          triggerPinOn('GUNmega-1_pin_35');
+       
+        
+        setTimeout(() => {
+          triggerPinOff('GUNmega-1_pin_35');
+        }, 1000);
+
+        // 1초 후 모든 타겟 다시 ON
+        setTimeout(() => {
+          if (isGameActive) {
+            isFirstRound = false;
+
+            // 모든 타겟 활성화
+            target25Active = true;
+            target26Active = true;
+            target27Active = true;
+            target28Active = true;
+            target29Active = true;
+            target30Active = true;
+            target31Active = true;
+            target32Active = true;
+            target33Active = true;
+            target34Active = true;
+
+            // 모든 핀 활성화 플래그 리셋
+            pin25Activated = false;
+            pin26Activated = false;
+            pin27Activated = false;
+            pin28Activated = false;
+            pin29Activated = false;
+            pin30Activated = false;
+            pin31Activated = false;
+            pin32Activated = false;
+            pin33Activated = false;
+            pin34Activated = false;
+
+            // LED ON
+            triggerPinOn('GUNmega-1_pin_25');
+            triggerPinOn('GUNmega-1_pin_26');
+            setTimeout(() => {
+              triggerPinOn('GUNmega-1_pin_27');
+              triggerPinOn('GUNmega-1_pin_28');
+            }, 200);
+            setTimeout(() => {
+              triggerPinOn('GUNmega-1_pin_29');
+              triggerPinOn('GUNmega-1_pin_30');
+            }, 400);
+            setTimeout(() => {
+              triggerPinOn('GUNmega-1_pin_31');
+              triggerPinOn('GUNmega-1_pin_32');
+            }, 600);
+            setTimeout(() => {
+              triggerPinOn('GUNmega-1_pin_33');
+              triggerPinOn('GUNmega-1_pin_34');
+            }, 800);
+
+            console.log("두 번째 라운드 시작!");
+          }
+        }, 2000);
+      }
+    }
+
+    // 실사격 시작 함수
+    function startShooting() {
+      // 게임 활성화
+      isGameActive = true;
+      isFirstRound = true;
+
+      // 타이머 시작 (0.01초 단위)
+      remainingTime = 60 * 100; // 6초 = 6000 (0.01초 단위)
+      updateTimer();
+
+      dlc2TimerInterval = setInterval(() => {
+        remainingTime--;
+        updateTimer();
+
+        if (remainingTime <= 0) {
+          clearInterval(dlc2TimerInterval);
+          endShooting();
+        }
+      }, 10); // 10ms = 0.01초
+
+      // 모든 타겟 활성화 (pin 25~34)
+      target25Active = true;
+      target26Active = true;
+      target27Active = true;
+      target28Active = true;
+      target29Active = true;
+      target30Active = true;
+      target31Active = true;
+      target32Active = true;
+      target33Active = true;
+      target34Active = true;
+
+      triggerPinOn('GUNmega-1_pin_25');
+      triggerPinOn('GUNmega-1_pin_26');
+      setTimeout(() => {
+        triggerPinOn('GUNmega-1_pin_27');
+        triggerPinOn('GUNmega-1_pin_28');
+      }, 200);
+      setTimeout(() => {
+        triggerPinOn('GUNmega-1_pin_29');
+        triggerPinOn('GUNmega-1_pin_30');
+      }, 400);
+      setTimeout(() => {
+        triggerPinOn('GUNmega-1_pin_31');
+        triggerPinOn('GUNmega-1_pin_32');
+      }, 600);
+      setTimeout(() => {
+        triggerPinOn('GUNmega-1_pin_33');
+        triggerPinOn('GUNmega-1_pin_34');
+      }, 800);
+    }
+
+    // 타이머 업데이트 함수
+    function updateTimer() {
+      const totalSeconds = Math.floor(remainingTime / 100);
+      const centiseconds = remainingTime % 100;
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      const timerElement = document.getElementById('timer');
+      timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}:${centiseconds.toString().padStart(2, '0')}`;
+    }
+
+    // 사격 종료 함수
+    function endShooting() {
+      // 게임 비활성화
+      isGameActive = false;
+
+      triggerPinOn('GUNmega-1_pin_36');
+      pin36TriggerTime = Date.now(); // pin_36이 켜진 시간 기록
+
+      // 모든 타겟 OFF
+      triggerPinOff('GUNmega-1_pin_25');
+      triggerPinOff('GUNmega-1_pin_26');
+      setTimeout(() => {
+        triggerPinOff('GUNmega-1_pin_27');
+        triggerPinOff('GUNmega-1_pin_28');
+      }, 200);
+      setTimeout(() => {
+        triggerPinOff('GUNmega-1_pin_29');
+        triggerPinOff('GUNmega-1_pin_30');
+      }, 400);
+      setTimeout(() => {
+        triggerPinOff('GUNmega-1_pin_31');
+        triggerPinOff('GUNmega-1_pin_32');
+      }, 600);
+      setTimeout(() => {
+        triggerPinOff('GUNmega-1_pin_33');
+        triggerPinOff('GUNmega-1_pin_34');
+      }, 800);
+      
+      setTimeout(() => {
+        triggerPinOff('GUNmega-1_pin_36');
+      }, 1000);
+
+      target25Active = false;
+      target26Active = false;
+      target27Active = false;
+      target28Active = false;
+      target29Active = false;
+      target30Active = false;
+      target31Active = false;
+      target32Active = false;
+      target33Active = false;
+      target34Active = false;
+
+      // 종료 팝업 표시
+      const endPopup = document.getElementById('endPopup');
+      const popupScore = document.getElementById('popupScore');
+      popupScore.textContent = totalScore;
+      endPopup.style.display = 'flex';
+    }
+
+    // 점수 업데이트 함수
+    function updateScore(points) {
+      totalScore += points;
+      const scoreElement = document.getElementById('score');
+      scoreElement.textContent = totalScore;
+    }
+
+    // 모든 타겟 OFF 함수
+    function turnOffAllTargets() {
+      triggerPinOff('GUNmega-1_pin_25');
+      triggerPinOff('GUNmega-1_pin_26');
+      setTimeout(() => {
+        triggerPinOff('GUNmega-1_pin_27');
+        triggerPinOff('GUNmega-1_pin_28');
+      }, 200);
+      setTimeout(() => {
+        triggerPinOff('GUNmega-1_pin_29');
+        triggerPinOff('GUNmega-1_pin_30');
+      }, 400);
+      setTimeout(() => {
+        triggerPinOff('GUNmega-1_pin_31');
+        triggerPinOff('GUNmega-1_pin_32');
+      }, 600);
+      setTimeout(() => {
+        triggerPinOff('GUNmega-1_pin_33');
+        triggerPinOff('GUNmega-1_pin_34');
+      }, 800);
+
+      target25Active = false;
+      target26Active = false;
+      target27Active = false;
+      target28Active = false;
+      target29Active = false;
+      target30Active = false;
+      target31Active = false;
+      target32Active = false;
+      target33Active = false;
+      target34Active = false;
+    }
+
+    // restartButton 클릭 이벤트
+    $('#restartButton').click(function () {
+      // 기존 타이머 정리
+      if (dlc2TimerInterval) {
+        clearInterval(dlc2TimerInterval);
+        dlc2TimerInterval = null;
+      }
+
+      // 점수 초기화
+      totalScore = 0;
+      document.getElementById('score').textContent = '0';
+
+      // 타이머 초기화
+      remainingTime = 60 * 100; // 1분 = 6000 (0.01초 단위)
+      updateTimer();
+
+      // 라운드 초기화
+      isFirstRound = true;
+
+      // 핀 활성화 플래그 초기화
+      isGameActive = false;
+      pin25Activated = false;
+      pin26Activated = false;
+      pin27Activated = false;
+      pin28Activated = false;
+      pin29Activated = false;
+      pin30Activated = false;
+      pin31Activated = false;
+      pin32Activated = false;
+      pin33Activated = false;
+      pin34Activated = false;
+
+      // 초기화 중 팝업 표시
+      const restartInitPopup = document.getElementById('restartInitPopup');
+      restartInitPopup.style.display = 'flex';
+
+      // endPopup 숨기기
+      const endPopup = document.getElementById('endPopup');
+      endPopup.style.display = 'none';
+
+      // pin_36이 켜진 시간으로부터 9초가 경과했는지 확인
+      const currentTime = Date.now();
+      const elapsedTime = pin36TriggerTime ? (currentTime - pin36TriggerTime) : 0;
+      const remainingWaitTime = Math.max(0, 9000 - elapsedTime);
+
+      console.log(`경과 시간: ${elapsedTime}ms, 남은 대기 시간: ${remainingWaitTime}ms`);
+
+      // 남은 시간만큼 대기 후 GUNmega-1_pin_35를 1초간 ON
+      setTimeout(() => {
+        triggerPinOn('GUNmega-1_pin_35');
+        setTimeout(() => {
+          triggerPinOff('GUNmega-1_pin_35');
+        }, 1000);
+      }, remainingWaitTime);
+
+      // 남은 시간 + 1초(pin_35 ON 시간) 후 초기화 팝업 숨기고 카운트다운 시작
+      setTimeout(() => {
+        restartInitPopup.style.display = 'none';
+        startCountdown();
+      }, remainingWaitTime + 1000);
+    });
+
+    // exitButton 클릭 이벤트
+    $('#exitButton').click(function () {
+      // 모든 타겟 OFF
+      turnOffAllTargets();
+      isGameActive = false;
+
+      // GUNmega-1_pin_36을 1초간 ON
+      triggerPinOn('GUNmega-1_pin_36');
+      setTimeout(() => {
+        triggerPinOff('GUNmega-1_pin_36');
+      }, 1000);
+
+      // endPopup 숨기기
+      const endPopup = document.getElementById('endPopup');
+      endPopup.style.display = 'none';
+
+      // shootingSection 숨기기
+      const shootingSection = document.getElementById('shootingSection');
+      shootingSection.style.display = 'none';
+
+      // endSection 표시
+      const endSection = document.getElementById('endSection');
+      const endScore = document.getElementById('endScore');
+      endScore.textContent = totalScore;
+
+      endSection.style.display = 'flex';
+    });
+
+    // 숨겨진 리셋 버튼 기능
+    let resetClickCount = 0;
+    let isResetting = false;
+    $('#hiddenResetButton').click(function () {
+      if (isResetting) return; // 리셋 중이면 무시
+
+      resetClickCount++;
+      console.log(`Reset button clicked: ${resetClickCount}/10`);
+
+      if (resetClickCount >= 10) {
+        isResetting = true;
+
+        // section5 (초기화 중) 표시
+        document.getElementById('section5').style.display = 'flex';
+
+        // BGM 정지
+        BGM1.pause();
+        BGM1.currentTime = 0;
+        BGM2.pause();
+        BGM2.currentTime = 0;
+
+        // GUNmega-1_pin_36을 1초간 ON
+        triggerPinOn('GUNmega-1_pin_36');
+        setTimeout(() => {
+          triggerPinOff('GUNmega-1_pin_36');
+        }, 1000);
+
+        // 모든 GUNmega-1 핀 22~37 끄기 (1초에 5개씩)
+        const pinsToTurnOff = [];
+        for (let i = 22; i <= 37; i++) {
+          pinsToTurnOff.push(i);
+        }
+
+        let currentIndex = 0;
+        setTimeout(() => {
+          const turnOffInterval = setInterval(() => {
+            // 3개씩 끄기
+            for (let j = 0; j < 3 && currentIndex < pinsToTurnOff.length; j++) {
+              const pinNumber = pinsToTurnOff[currentIndex];
+              if (typeof triggerPinOff === 'function') {
+                triggerPinOff(`GUNmega-1_pin_${pinNumber}`);
+                console.log(`Turning off pin ${pinNumber}`);
+              }
+              currentIndex++;
+            }
+
+            // 모든 핀을 껐으면 새로고침
+            if (currentIndex >= pinsToTurnOff.length) {
+              clearInterval(turnOffInterval);
+              console.log("All pins turned off. Refreshing page...");
+              setTimeout(() => {
+                location.reload();
+              }, 1000);
+            }
+          }, 1000);
+        }, 1000); // pin_36 ON 후 1초 대기
+      }
+    });
+  </script>
+
+  <script src="../script.js"></script>
+</body>
+
+</html>
