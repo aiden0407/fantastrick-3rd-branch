@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>dlc-right</title>
+  <script src="../jquery.min.js" type='text/javascript'></script>
+  <link rel="stylesheet" href="../style.css" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+
+<body>
+  <div id="overlay">연결이 끊겼습니다.</div>
+  <div id="arduinoContainer"></div>
+
+  <div id="section0"
+    style="width:100%; height:100dvh; display: flex; justify-content: center; align-items: center; color: red; font-size: 40px;">
+    정상적인 초기화를 위해 화면을 터치해 주세요
+  </div>
+
+  <div id="monitorText1Container" style="display: none; width: 100%; height: 100dvh; position: absolute; top: 0; left: 0; justify-content: center; align-items: center; z-index: 100;">
+    <img id="monitorText1" src="./img/monitor_text1.png" style="max-width: 90%; max-height: 90%; object-fit: contain;">
+  </div>
+
+  <video id="video1" src="./video/video1.mp4" style="display: none; width: 100%; height: 100dvh; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 100;"></video>
+
+  <img id="monitorMainpage" src="./img/monitor_mainpage.png" style="display: none; width: 100%; height: 100dvh; object-fit: contain; position: absolute; top: 0; left: 0; z-index: 100;">
+
+  <div id="timerDisplay" style="display: none; position: absolute; top: 69.3%; left: 50%; transform: translate(-50%, -50%); font-size: 200px; font-weight: bold; color: white; z-index: 101;">10:00</div>
+
+  <img id="monitorFinpage" src="./img/monitor_finpage.png" style="display: none; width: 100%; height: 100dvh; object-fit: contain; position: absolute; top: 0; left: 0; z-index: 100;">
+
+  <video id="video2" src="./video/video2.mp4" style="display: none; width: 100%; height: 100dvh; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 100;"></video>
+
+  <img id="monitorEndpage" src="./img/monitor_endpage.png" style="display: none; width: 100%; height: 100dvh; object-fit: contain; position: absolute; top: 0; left: 0; z-index: 100;">
+
+  <div id="resetButton" style="position: absolute; top: 20px; right: 20px; width: 100px; height: 100px; z-index: 200; -webkit-tap-highlight-color: transparent; user-select: none;"></div>
+
+  <audio id="audio1" src="./video/video1.MP3"></audio>
+  <audio id="audio2" src="./video/video2.mp3"></audio>
+
+  <script>
+    // BroadcastChannel 생성 (left와 right 간 통신)
+    const dlcChannel = new BroadcastChannel('dlc_channel');
+
+    // 초기화 상태 변수
+    let isInitialized = false;
+
+    // 핀 상태 변수들
+    let pin39Activated = false;
+    let pin39Count = 0;
+    let pin41Activated = false;
+    let resetClickCount = 0;
+    let timerInterval = null;
+    let timeRemaining = 600; // 10분 = 600초
+
+    // SLOTmega-2 read 핀 모니터링
+    const monitoredPins = [
+      "SLOTmega-2_pin_39",
+      "SLOTmega-2_pin_41"
+    ];
+
+    // 핀 액션 정의
+    const pinActions_on = {
+      "SLOTmega-2_pin_39": () => {
+        if (!pin39Activated) {
+          pin39Activated = true;
+          pin39Count++;
+          console.log("Pin 39 activated, count:", pin39Count);
+
+          if (pin39Count === 1) {
+            // 첫 번째 감지: monitor_text1 이미지 표시
+            const monitorText1Container = document.getElementById('monitorText1Container');
+            const monitorText1 = document.getElementById('monitorText1');
+            monitorText1Container.style.display = 'flex';
+            monitorText1.classList.add('popup-in');
+
+            // 7초 후 이미지 숨기고 비디오 재생
+            setTimeout(() => {
+              // popup-out 애니메이션
+              monitorText1.classList.remove('popup-in');
+              monitorText1.classList.add('popup-out');
+
+              // 애니메이션 완료 후 숨김
+              setTimeout(() => {
+                monitorText1.classList.remove('popup-out');
+                monitorText1Container.style.display = 'none';
+
+                const video1 = document.getElementById('video1');
+                video1.style.display = 'block';
+                video1.play();
+
+                const audio1 = document.getElementById('audio1');
+                audio1.play();
+
+                // video1 종료 시 pin39 리셋
+                video1.addEventListener('ended', () => {
+                  pin39Activated = false;
+                  console.log("Video1 ended, pin39 reset for next trigger");
+                });
+              }, 200); // popup-out 애니메이션 시간과 일치
+            }, 5200);
+          } else if (pin39Count === 2) {
+            // 두 번째 감지: 비디오 숨기고 monitor_mainpage 표시
+            const video1 = document.getElementById('video1');
+            video1.style.display = 'none';
+            video1.pause();
+
+            const monitorMainpage = document.getElementById('monitorMainpage');
+            monitorMainpage.style.display = 'block';
+
+            const timerDisplay = document.getElementById('timerDisplay');
+            timerDisplay.style.display = 'block';
+
+            // 10분 타이머 시작 (표시만, 넘어가는 로직은 left.html에서 처리)
+            startTimer();
+          }
+        }
+      },
+      "SLOTmega-2_pin_41": () => {
+        if (!pin41Activated) {
+          pin41Activated = true;
+          console.log("Pin 41 activated");
+
+          // 5초 후 video2 재생
+          setTimeout(() => {
+            const monitorFinpage = document.getElementById('monitorFinpage');
+            monitorFinpage.style.display = 'none';
+
+            const video2 = document.getElementById('video2');
+            video2.style.display = 'block';
+            video2.play();
+
+            const audio2 = document.getElementById('audio2');
+            audio2.play();
+
+            // 영상 종료 시 endpage 표시
+            video2.addEventListener('ended', () => {
+              video2.style.display = 'none';
+
+              const monitorEndpage = document.getElementById('monitorEndpage');
+              monitorEndpage.style.display = 'block';
+
+              // left.html에 최종 화면 표시 메시지 전송
+              dlcChannel.postMessage({ action: 'showFinalScreen' });
+            });
+          }, 5000);
+        }
+      }
+    };
+
+    // 핀 상태 업데이트 함수 (test)
+    // function updatePinDisplay(pinIdentifier) {
+    //   if (!isInitialized) return; // 초기화 전에는 신호 무시
+
+    //   if (pinActions_on[pinIdentifier] && window[pinIdentifier] === true) {
+    //     pinActions_on[pinIdentifier]();
+    //   }
+    // }
+    // setInterval(() => {
+    //   Object.keys(pinActions_on).forEach(updatePinDisplay);
+    // }, 200);
+
+    // 핀 상태 업데이트 함수 (real)
+    function updatePinDisplay(pinIdentifier) {
+      if (window[pinIdentifier] === true) {
+        if (pinActions_on[pinIdentifier]) {
+          pinActions_on[pinIdentifier]();
+        }
+      }
+    }
+
+    // 타이머 시작 함수 (표시만, 자동 넘김 없음)
+    function startTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+      }
+
+      timerInterval = setInterval(() => {
+        timeRemaining--;
+
+        const minutes = Math.floor(timeRemaining / 60);
+        const seconds = timeRemaining % 60;
+        const timerDisplay = document.getElementById('timerDisplay');
+        timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+        if (timeRemaining <= 0) {
+          clearInterval(timerInterval);
+          // 타이머만 멈춤, 화면 전환은 left.html의 BroadcastChannel 메시지로 처리
+        }
+      }, 1000);
+    }
+
+    // finpage 표시 함수
+    function showFinpage() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+      }
+
+      const monitorMainpage = document.getElementById('monitorMainpage');
+      monitorMainpage.style.display = 'none';
+
+      const timerDisplay = document.getElementById('timerDisplay');
+      timerDisplay.style.display = 'none';
+
+      const monitorFinpage = document.getElementById('monitorFinpage');
+      monitorFinpage.style.display = 'block';
+    }
+
+    // BroadcastChannel 메시지 수신
+    dlcChannel.onmessage = (event) => {
+      if (event.data.action === 'showFinpage') {
+        console.log("Received showFinpage message from left.html");
+        showFinpage();
+      } else if (event.data.action === 'reload') {
+        console.log("Received reload message from left.html");
+        setTimeout(() => {
+          location.reload();
+        }, 1000);
+      }
+    };
+
+    // 초기화 화면 클릭 이벤트
+    $('#section0').click(function () {
+      isInitialized = true; // 초기화 완료
+      section0.style.display = "none";
+    });
+
+    // 오른쪽 위 10번 클릭 새로고침
+    $('#resetButton').click(function () {
+      resetClickCount++;
+      console.log("Reset button clicked:", resetClickCount);
+
+      if (resetClickCount >= 10) {
+        location.reload();
+      }
+    });
+  </script>
+
+  <script src="../script.js"></script>
+</body>
+
+</html>

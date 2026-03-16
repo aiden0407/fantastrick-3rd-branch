@@ -1,0 +1,73 @@
+@font-face {
+    font-family: 'Pretendard';
+    src: url('./Pretendard-Bold.woff2') format('woff2');
+    font-weight: bold;
+    font-style: normal;
+}
+
+body {
+    background-image: url('./img/background.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-attachment: fixed;
+    background-size: cover;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.section {
+    width: 100%;
+    height: 100dvh;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+@keyframes blink {
+
+    0%,
+    40% {
+        opacity: 0;
+    }
+
+    40.0001%,
+    100% {
+        opacity: 1;
+    }
+}
+
+.blinking {
+    animation: blink 1.2s steps(2, start) infinite;
+}
+
+@keyframes popupIn {
+    0% {
+        transform: scale(0.7);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes popupOut {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0.7);
+        opacity: 0;
+    }
+}
+
+.popup-in {
+    animation: popupIn 0.2s;
+}
+
+.popup-out {
+    animation: popupOut 0.2s;
+}
