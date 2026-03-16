@@ -169,6 +169,36 @@
         <div class="pin-toggle">Pin 38: <button id="st38">OFF</button></div>
         <div class="pin-toggle">Pin 39: <button id="st39">OFF</button></div>
         <div class="pin-toggle">Pin 40: <button id="st40">OFF</button></div>
+        <div class="pin-toggle">Pin 41: <button id="st41">OFF</button></div>
+        <div class="pin-toggle">Pin 42: <button id="st42">OFF</button></div>
+    </section>
+
+    <!-- doctor-room -->
+    <section>
+        <h2>doctor-room (doctormega-1) 핀</h2>
+        <div class="pin-toggle">Pin 22: <button id="dt22">OFF</button></div>
+        <div class="pin-toggle">Pin 23: <button id="dt23">OFF</button></div>
+        <div class="pin-toggle">Pin 24: <button id="dt24">OFF</button></div>
+        <div class="pin-toggle">Pin 25: <button id="dt25">OFF</button></div>
+    </section>
+
+    <!-- GUN dlc2 -->
+    <section>
+        <h2>dlc2 (GUNmega-2) 핀</h2>
+        <div class="pin-toggle">Pin 22: <button id="g22">OFF</button></div>
+        <div class="pin-toggle">Pin 23: <button id="g23">OFF</button></div>
+        <div class="pin-toggle">Pin 24: <button id="g24">OFF</button></div>
+        <div class="pin-toggle">Pin 25: <button id="g25">OFF</button></div>
+        <div class="pin-toggle">Pin 26: <button id="g26">OFF</button></div>
+        <div class="pin-toggle">Pin 27: <button id="g27">OFF</button></div>
+        <div class="pin-toggle">Pin 28: <button id="g28">OFF</button></div>
+        <div class="pin-toggle">Pin 29: <button id="g29">OFF</button></div>
+        <div class="pin-toggle">Pin 30: <button id="g30">OFF</button></div>
+        <div class="pin-toggle">Pin 31: <button id="g31">OFF</button></div>
+        <div class="pin-toggle">Pin 32: <button id="g32">OFF</button></div>
+        <div class="pin-toggle">Pin 33: <button id="g33">OFF</button></div>
+        <div class="pin-toggle">Pin 34: <button id="g34">OFF</button></div>
+        <div class="pin-toggle">Pin 35: <button id="g35">OFF</button></div>
     </section>
 
     <!-- <div id="log">▶ 로그가 여기에 표시됩니다.</div> -->
@@ -184,6 +214,10 @@
         <a href="./envy-bar/right.html" target="_blank">엔비바(R) + 로직</a>
         <a href="./street/left.html" target="_blank">거리(L) + 로직</a>
         <a href="./street/right.html" target="_blank">거리(R)</a>
+        <a href="./doctor-room/" target="_blank">박사방</a>
+        <a href="./dlc/left.html" target="_blank">전파상 DLC(L) + 로직</a>
+        <a href="./dlc/right.html" target="_blank">전파상 DLC(R) + 로직</a>
+        <a href="./dlc2/" target="_blank">사격 DLC2 GUN</a>
     </div>
 
     <script>
@@ -194,7 +228,9 @@
         const stateDisinfecting = { 22: 'off', 23: 'off', 24: 'off', 25: 'off', 26: 'off', 27: 'off', 28: 'off', 29: 'off', 30: 'off', 31: 'off', 32: 'off', 33: 'off', 34: 'off', 35: 'off', 36: 'off' };
         const stateSafe = { 22: 'off', 24: 'off', 25: 'off', 26: 'off', 27: 'off', 28: 'off', 29: 'off', 30: 'off', 31: 'off' };
         const stateBar = { 22: 'off', 23: 'off', 24: 'off', 25: 'off', 26: 'off', 27: 'off', 28: 'off', 29: 'off', 30: 'off', 31: 'off', 32: 'off', 33: 'off', 34: 'off' };
-        const stateStreet = { 22: 'off', 23: 'off', 24: 'off', 25: 'off', 26: 'off', 27: 'off', 28: 'off', 29: 'off', 30: 'off', 31: 'off', 32: 'off', 33: 'off', 34: 'off', 35: 'off', 36: 'off', 37: 'off', 38: 'off', 39: 'off', 40: 'off' };
+        const stateStreet = { 22: 'off', 23: 'off', 24: 'off', 25: 'off', 26: 'off', 27: 'off', 28: 'off', 29: 'off', 30: 'off', 31: 'off', 32: 'off', 33: 'off', 34: 'off', 35: 'off', 36: 'off', 37: 'off', 38: 'off', 39: 'off', 40: 'off', 41: 'off', 42: 'off' };
+        const stateDoctor = { 22: 'off', 23: 'off', 24: 'off', 25: 'off' };
+        const stateGun = { 22: 'off', 23: 'off', 24: 'off', 25: 'off', 26: 'off', 27: 'off', 28: 'off', 29: 'off', 30: 'off', 31: 'off', 32: 'off', 33: 'off', 34: 'off', 35: 'off' };
         // const logEl = document.getElementById('log');
 
         // function log(txt) {
@@ -226,6 +262,12 @@
             const pinsSt = Object.entries(stateStreet).map(([pin, st]) => ({
                 pin: Number(pin), mode: 'read', state: st
             }));
+            const pinsDt = Object.entries(stateDoctor).map(([pin, st]) => ({
+                pin: Number(pin), mode: 'read', state: st
+            }));
+            const pinsG = Object.entries(stateGun).map(([pin, st]) => ({
+                pin: Number(pin), mode: 'read', state: st
+            }));
 
             const msg = {
                 type: 'slaveUpdate',
@@ -236,7 +278,9 @@
                     { arduinoID: 'disinfectmega-2', pins: pinsD },
                     { arduinoID: 'safemega-1', pins: pinsS },
                     { arduinoID: 'barmega-1', pins: pinsV },
-                    { arduinoID: 'streetmega-2', pins: pinsSt }
+                    { arduinoID: 'streetmega-2', pins: pinsSt },
+                    { arduinoID: 'doctormega-1', pins: pinsDt },
+                    { arduinoID: 'GUNmega-2', pins: pinsG }
                 ]
             };
             channel.postMessage(msg);
@@ -260,7 +304,9 @@
         bindButtons('d', stateDisinfecting, [22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36]);
         bindButtons('s', stateSafe, [22, 24, 25, 26, 27, 28, 29, 30, 31]);
         bindButtons('v', stateBar, [22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34]);
-        bindButtons('st', stateStreet, [22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]);
+        bindButtons('st', stateStreet, [22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42]);
+        bindButtons('dt', stateDoctor, [22, 23, 24, 25]);
+        bindButtons('g', stateGun, [22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35]);
 
         // Front 로부터 오는 제어 메시지 로깅
         channel.onmessage = ev => {
