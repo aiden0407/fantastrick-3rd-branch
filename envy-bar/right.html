@@ -22,26 +22,25 @@
 
     <div id="section1" class="section">
         <div
-            style="width: 100%; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 50px; margin-top: 100px;">
-            <div style="display: flex; justify-content: center; align-items: center; width: 100%;">
+            style="width: 100%; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 100px;">
+            <div style="margin-top: 46px; width: 100%; height: 50vh; display: flex; justify-content: center; align-items: center; width: 100%;">
                 <div
-                    style="width: 25%; position: relative; display: flex; align-items: center; justify-content: center;">
-                    <video id="CCTV" style="width: 100%; position: absolute; display: none;" autoplay muted>
+                    style="width: 26.3%; height: 90%; position: relative; display: flex; align-items: center; justify-content: center;">
+                    <video id="CCTV" style="width: 110%; position: absolute; display: none;" autoplay muted>
                         <source src="./img/video/CCTV.mp4" type="video/mp4">
                     </video>
                     <img id='logo' src="./img/NERC_logo_skyblue_deep.png" alt="NERC_logo_skyblue_deep"
                         style="width: 100%;" />
                 </div>
-                <div style="width: 30%;">
+                <div style="width: 30%; height: 100%;">
                     <video id="loading" style="width: 100%; display: none;" autoplay muted loop>
                         <source src="./img/video/loading_start.mp4" type="video/mp4">
                     </video>
                 </div>
-                <div style="width: 45%;">
-                    <video id="footprint_hint" style="width: 100%; display: none;" autoplay muted loop>
+                <div style="width: 43.7%; height: 100%; display: flex; justify-content: end;">
+                    <video id="footprint_hint" style="height: 100%; display: none;" autoplay muted loop>
                         <source src="./img/video/footprint.mp4" type="video/mp4">
                     </video>
-
                 </div>
             </div>
             <div
@@ -96,7 +95,7 @@
                     pin22Activated = true;
                     triggerPinOn('barmega-2_pin_23');
                     if (pin22Activated && pin23Activated && pin24Activated) {
-                        triggerPinOnAndOff('barmega-2_pin_22');
+                        triggerPinOn('barmega-2_pin_22');
                     }
                 }
             },
@@ -105,7 +104,7 @@
                     pin23Activated = true;
                     triggerPinOn('barmega-2_pin_24');
                     if (pin22Activated && pin23Activated && pin24Activated) {
-                        triggerPinOnAndOff('barmega-2_pin_22');
+                        triggerPinOn('barmega-2_pin_22');
                     }
                 }
             },
@@ -114,7 +113,7 @@
                     pin24Activated = true;
                     triggerPinOn('barmega-2_pin_25');
                     if (pin22Activated && pin23Activated && pin24Activated) {
-                        triggerPinOnAndOff('barmega-2_pin_22');
+                        triggerPinOn('barmega-2_pin_22');
                     }
                 }
             },
@@ -149,6 +148,7 @@
             "barmega-1_pin_27": () => {
                 if (isAfterNarration3 && !pin27Activated) {
                     pin27Activated = true;
+	        
                     $('#loading').css('display', 'none');
                     triggerPinOn('barmega-2_pin_38');
                     triggerPinOff('barmega-2_pin_31');
@@ -187,7 +187,7 @@
                     }, 30000);
                     setTimeout(() => {
                         $('#footprint_textbox').css('display', 'none');
-                    }, 42000);//추가
+                    }, 48000);//추가
                     setTimeout(() => {
                         $('#footprint_hint').attr('src', './img/video/redpoint.mp4');
                         new Audio('./sound/narration/바7.mp3').play();
@@ -219,19 +219,44 @@
                         triggerPinOn('barmega-2_pin_33');
                     }, 60000);//90000->60000
                     setTimeout(() => {
+                        // 기존 CCTV 비디오 메모리 해제
+                        clearVideoSource('CCTV');
+                        const cctvVideo = document.getElementById(videoId);
+                        cctvVideo.pause();
+                        cctvVideo.removeAttribute('src');
+                        cctvVideo.load();
                         $('#CCTV').attr('src', './img/video/profile.mp4');
-                    }, 61000); //60000->61000
+                    }, 61000);
+
                     setTimeout(() => {
                         triggerPinOnAndOff('barmega-2_pin_37');
-                    }, 63000);//93000->63000
+
+                        // footprint_textbox 비디오 준비
+                        const footprintVideo = document.getElementById('footprint_textbox');
+                        footprintVideo.pause();
+                        footprintVideo.removeAttribute('src');
+                        footprintVideo.load();
+
+                        // 약간의 지연 후 새 비디오 로드
+                        setTimeout(() => {
+                            $('#footprint_textbox').attr('src', './img/video/keyguide.mp4');
+
+                            // 비디오 로드 완료 후 표시
+                            footprintVideo.addEventListener('loadeddata', function() {
+                                $('#footprint_textbox').css('display', 'block');
+                            }, { once: true });
+                        }, 100);
+                    }, 63000);
                 }
             },
             "barmega-1_pin_30": () => {
                 if (!pin30Activated) {
                     pin30Activated = true;
                     triggerPinOn('barmega-2_pin_27');
+	        new Audio('./sound/open.mp3').play();//비밀문 오픈 사운드 추가
                     setTimeout(() => {
                         $('#CCTV').css('display', 'none');//위치 이동
+		$('#footprint_textbox').css('display', 'none');
                         $('#logo').css('display', 'block');//추가
                         new Audio('./sound/narration/바10.mp3').play();
                     }, 7000);
@@ -240,7 +265,7 @@
             "barmega-1_pin_31": () => {
                 if (pin30Activated && !pin31Activated) {
                     pin31Activated = true;
-                    triggerPinOff('barmega-2_pin_26');
+                    //triggerPinOff('barmega-2_pin_26');
                     triggerPinOn('barmega-2_pin_28');
                     triggerPinOnAndOff('barmega-2_pin_40');
                     setTimeout(() => {
@@ -251,6 +276,10 @@
                                 const audio2 = new Audio('./sound/narration/바12.mp3');
                                 audio2.play();
                             }, 3000);
+		    setTimeout(() => {
+                                triggerPinOff('barmega-2_pin_26');
+                            }, 29000);//추가: 나레이션12 끝나는 시간에 맞춰 문 열기
+			
                         });
                     }, 5000);
                 }
@@ -311,7 +340,7 @@
                     new Audio('./sound/narration/바3.mp3').play();
                     triggerPinOn('barmega-2_pin_36');
                     setTimeout(() => {
-                        $('#footprint_textbox').css('display', 'none');
+                        //$('#footprint_textbox').css('display', 'none');
                         triggerPinOn('barmega-2_pin_31');
                         triggerPinOn('barmega-2_pin_32');
                         triggerPinOn('barmega-2_pin_33');
@@ -329,6 +358,9 @@
                 }
             }
         }
+        setInterval(() => {
+            Object.keys(pinActions_on).forEach(updatePinDisplay);
+        }, 200);
 
         $('#section0').click(function () {
             section0.style.display = "none";
