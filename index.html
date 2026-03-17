@@ -182,6 +182,40 @@
         <div class="pin-toggle">Pin 25: <button id="dt25">OFF</button></div>
     </section>
 
+    <!-- persistenceOfTime 시간의 영속성 -->
+    <section>
+        <h2>시간의 영속성 (time-2) Read 핀</h2>
+        <div class="pin-toggle">Pin 22 시작신호: <button id="t22">OFF</button></div>
+        <div class="pin-toggle">Pin 23 리셋신호: <button id="t23">OFF</button></div>
+        <div class="pin-toggle">Pin 24 문열림: <button id="t24">OFF</button></div>
+        <div class="pin-toggle">Pin 25 문닫힘: <button id="t25">OFF</button></div>
+        <div class="pin-toggle">Pin 26 stage1 조사1: <button id="t26">OFF</button></div>
+        <div class="pin-toggle">Pin 27 stage2 조사2: <button id="t27">OFF</button></div>
+        <div class="pin-toggle">Pin 28 stage3 조사3: <button id="t28">OFF</button></div>
+        <div class="pin-toggle">Pin 29 stage4 최종토의: <button id="t29">OFF</button></div>
+        <div class="pin-toggle">Pin 30 stage5 서브: <button id="t30">OFF</button></div>
+        <div class="pin-toggle">Pin 31 빨간버튼: <button id="t31">OFF</button></div>
+        <div class="pin-toggle">Pin 32 캡슐비번: <button id="t32">OFF</button></div>
+        <div class="pin-toggle">Pin 33 캡슐조사1(내부): <button id="t33">OFF</button></div>
+        <div class="pin-toggle">Pin 34 빅딜1: <button id="t34">OFF</button></div>
+        <div class="pin-toggle">Pin 35 빅딜2: <button id="t35">OFF</button></div>
+        <div class="pin-toggle">Pin 36 빅딜3: <button id="t36">OFF</button></div>
+        <div class="pin-toggle">Pin 37 시큐1: <button id="t37">OFF</button></div>
+        <div class="pin-toggle">Pin 38 시큐2: <button id="t38">OFF</button></div>
+        <div class="pin-toggle">Pin 39 시큐3: <button id="t39">OFF</button></div>
+        <div class="pin-toggle">Pin 40 엔진1: <button id="t40">OFF</button></div>
+        <div class="pin-toggle">Pin 41 엔진2: <button id="t41">OFF</button></div>
+        <div class="pin-toggle">Pin 42 엔진3: <button id="t42">OFF</button></div>
+        <div class="pin-toggle">Pin 43 문제1: <button id="t43">OFF</button></div>
+        <div class="pin-toggle">Pin 44 문제2: <button id="t44">OFF</button></div>
+        <div class="pin-toggle">Pin 45 문제3: <button id="t45">OFF</button></div>
+        <div class="pin-toggle">Pin 46 문제4: <button id="t46">OFF</button></div>
+        <div class="pin-toggle">Pin 47 문제5: <button id="t47">OFF</button></div>
+        <div class="pin-toggle">Pin 48 문제6: <button id="t48">OFF</button></div>
+        <div class="pin-toggle">Pin 49 카드태그: <button id="t49">OFF</button></div>
+        <div class="pin-toggle">Pin 50 캡슐조사2(외부): <button id="t50">OFF</button></div>
+    </section>
+
     <!-- GUN dlc2 -->
     <section>
         <h2>dlc2 (GUNmega-2) 핀</h2>
@@ -218,6 +252,8 @@
         <a href="./dlc/left.html" target="_blank">전파상 DLC(L) + 로직</a>
         <a href="./dlc/right.html" target="_blank">전파상 DLC(R) + 로직</a>
         <a href="./dlc2/" target="_blank">사격 DLC2 GUN</a>
+        <a href="./persistenceOfTime/left.html" target="_blank">시간의 영속성(L) + 로직</a>
+        <a href="./persistenceOfTime/right.html" target="_blank">시간의 영속성(R) + 로직</a>
     </div>
 
     <script>
@@ -231,6 +267,7 @@
         const stateStreet = { 22: 'off', 23: 'off', 24: 'off', 25: 'off', 26: 'off', 27: 'off', 28: 'off', 29: 'off', 30: 'off', 31: 'off', 32: 'off', 33: 'off', 34: 'off', 35: 'off', 36: 'off', 37: 'off', 38: 'off', 39: 'off', 40: 'off', 41: 'off', 42: 'off' };
         const stateDoctor = { 22: 'off', 23: 'off', 24: 'off', 25: 'off' };
         const stateGun = { 22: 'off', 23: 'off', 24: 'off', 25: 'off', 26: 'off', 27: 'off', 28: 'off', 29: 'off', 30: 'off', 31: 'off', 32: 'off', 33: 'off', 34: 'off', 35: 'off' };
+        const stateTime = { 22: 'off', 23: 'off', 24: 'off', 25: 'off', 26: 'off', 27: 'off', 28: 'off', 29: 'off', 30: 'off', 31: 'off', 32: 'off', 33: 'off', 34: 'off', 35: 'off', 36: 'off', 37: 'off', 38: 'off', 39: 'off', 40: 'off', 41: 'off', 42: 'off', 43: 'off', 44: 'off', 45: 'off', 46: 'off', 47: 'off', 48: 'off', 49: 'off', 50: 'off' };
         // const logEl = document.getElementById('log');
 
         // function log(txt) {
@@ -268,6 +305,9 @@
             const pinsG = Object.entries(stateGun).map(([pin, st]) => ({
                 pin: Number(pin), mode: 'read', state: st
             }));
+            const pinsT = Object.entries(stateTime).map(([pin, st]) => ({
+                pin: Number(pin), mode: 'read', state: st
+            }));
 
             const msg = {
                 type: 'slaveUpdate',
@@ -280,7 +320,8 @@
                     { arduinoID: 'barmega-1', pins: pinsV },
                     { arduinoID: 'streetmega-2', pins: pinsSt },
                     { arduinoID: 'doctormega-1', pins: pinsDt },
-                    { arduinoID: 'GUNmega-2', pins: pinsG }
+                    { arduinoID: 'GUNmega-2', pins: pinsG },
+                    { arduinoID: 'time-2', pins: pinsT }
                 ]
             };
             channel.postMessage(msg);
@@ -307,6 +348,7 @@
         bindButtons('st', stateStreet, [22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42]);
         bindButtons('dt', stateDoctor, [22, 23, 24, 25]);
         bindButtons('g', stateGun, [22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35]);
+        bindButtons('t', stateTime, [22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50]);
 
         // Front 로부터 오는 제어 메시지 로깅
         channel.onmessage = ev => {

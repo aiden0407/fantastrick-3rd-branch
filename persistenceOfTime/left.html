@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>time-left</title>
+  <script src="../jquery.min.js" type='text/javascript'></script>
+  <link rel="stylesheet" href="../style.css" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+
+<body>
+  <div id="overlay">연결이 끊겼습니다.</div>
+  <div id="arduinoContainer"></div>
+
+  <div id="hiddenResetButton"
+    style="position:fixed;top:0;right:0;width:100px;height:100px;cursor:pointer;z-index:9999;-webkit-tap-highlight-color:transparent;user-select:none;">
+  </div>
+
+  <div id="section0"
+    style="width:100%;height:100dvh;display:flex;justify-content:center;align-items:center;color:red;font-size:40px;">
+    정상적인 초기화를 위해 화면을 터치해 주세요
+  </div>
+
+  <div id="section1" class="section"></div>
+
+  <div id="sectionReset" class="section"
+    style="color:white;font-size:60px;font-family:'Pretendard',sans-serif;background-color:black;">
+    초기화 중...
+  </div>
+
+  <div id="gameContainer"
+    style="display:none;width:100%;height:100dvh;position:relative;overflow:hidden;background:black;">
+    <img id="bgImg" class="full-bg" style="display:none;" />
+    <img id="ov1" class="phase-overlay" style="display:none;" />
+    <img id="ov2" class="phase-overlay" style="display:none;" />
+    <img id="ov3" class="phase-overlay" style="display:none;" />
+    <img id="ov4" class="phase-overlay" style="display:none;" />
+    <div id="fantaArea">
+      <img id="fantaImg1" src="image/fanta_1.png" />
+      <img id="fantaImg2" src="image/fanta_2.png"
+        style="position:absolute;top:0;left:0;opacity:0;" />
+    </div>
+    <div id="dialogueArea">
+      <img class="dialogue-bg" src="image/fanta_window.png" />
+      <div class="dialogue-text" id="dialogueText"></div>
+    </div>
+    <div id="bottomBox"><img id="bottomBoxImg" style="width:100%;" /></div>
+    <div id="timerArea">
+      <img class="timer-bg" id="timerBg" />
+      <div class="timer-text" id="timerText"></div>
+    </div>
+    <div id="videoLayer">
+      <video id="videoPlayer" playsinline></video>
+    </div>
+    <div id="popupLayer"><img class="popup-img" id="popupImg" /></div>
+    <div id="nextPopupBox" class="next-popup" style="display:none;">
+      <img src="image/nextpopup.png" class="np-img" />
+    </div>
+  </div>
+
+  <script>
+    const timeChannel = new BroadcastChannel('time_channel');
+    let isInitialized = false;
+    let currentPhase = 0;
+    var timerInterval = null;
+    var typingInterval = null;
+    let currentNarration = null;
+    let currentBGM = null;
+    let fantaTimer = null;
+    let nextPopupCb = null;
+    let pin32Stack = false;
+    let canShowNextPopup = false;
+    let allTurnsComplete = false;
+    let pin31Disabled = false;
+    let pin31Cooldown = false;
+
+    // DOM
+    const gc = document.getElementById('gameContainer');
+    const bgEl = document.getElementById('bgImg');
+    const ov = [null, document.getElementById('ov1'), document.getElementById('ov2'), document.getElementById('ov3'), document.getElementById('ov4')];
+    const fi1 = document.getElementById('fantaImg1');
+    const fi2 = document.getElementById('fantaImg2');
+    const dlgArea = document.getElementById('dialogueArea');
+    const dlgText = document.getElementById('dialogueText');
+    const bbArea = document.getElementById('bottomBox');
+    const bbImg = document.getElementById('bottomBoxImg');
+    const tmArea = document.getElementById('timerArea');
+    const tmText = document.getElementById('timerText');
+    const tmBg = document.getElementById('timerBg');
+    const vidArea = document.getElementById('videoLayer');
+    const vidEl = document.getElementById('videoPlayer');
+    const popArea = document.getElementById('popupLayer');
+    const popImg = document.getElementById('popupImg');
+    const npImg = document.getElementById('nextPopupBox');
+
+    function after(ms, fn) { return setTimeout(fn, ms); }
+
+    // ===== Audio =====
+    function playNarration(n, cb) {
+      stopNarration();
+      currentNarration = new Audio('sound/narration/narration%23' + n + '.mp3');
+      currentNarration.play().catch(() => { });
+      if (cb) currentNarration.onended = cb;
+    }
+    function playNarSub(n, sub, cb) {
+      stopNarration();
+      currentNarration = new Audio('sound/narration/narration%23' + n + '_' + sub + '.mp3');
+      currentNarration.play().catch(() => { });
+      if (cb) currentNarration.onended = cb;
+    }
+    function playNarFile(f, cb) {
+      stopNarration();
+      currentNarration = new Audio(f);
+      currentNarration.play().catch(() => { });
+      if (cb) currentNarration.onended = cb;
+    }
+    function stopNarration() {
+      if (currentNarration) { currentNarration.pause(); currentNarration.onended = null; currentNarration = null; }
+    }
+    const effectAudios = {
+      1: new Audio('sound/effect/effect1.mp3'),
+      2: new Audio('sound/effect/effect2.mp3'),
+      3: new Audio('sound/effect/effect3.mp3')
+    };
+    const sfxAudios = {
+      4: new Audio('sound/narration/sfx_narration%234.mp3'),
+      5: new Audio('sound/narration/sfx_narration%235.mp3')
+    };
+    function playEffect(n) { const a = effectAudios[n]; if (a) { a.currentTime = 0; a.play().catch(() => { }); } }
+    function playSfx(n) { const a = sfxAudios[n]; if (a) { a.currentTime = 0; a.play().catch(() => { }); } }
+    function playBGM(n) {
+      stopBGM();
+      currentBGM = new Audio('sound/bgm/BGM' + n + '.mp3');
+      currentBGM.loop = true;
+      currentBGM.play().catch(() => { });
+    }
+    function stopBGM() { if (currentBGM) { currentBGM.pause(); currentBGM = null; } }
+    function fadeBGM(d) { if (currentBGM) fadeOutAudio(currentBGM, d || 2000); }
+    function resumeBGM() { if (currentBGM) currentBGM.play().catch(() => { }); }
+
+    // ===== Typing =====
+    function typeT(text, speed, cb) {
+      clearTyping();
+      let i = 0; dlgText.textContent = ''; dlgText.classList.add('typing-cursor');
+      typingInterval = setInterval(() => {
+        if (i < text.length) { dlgText.textContent += text[i++]; }
+        else { clearTyping(); dlgText.classList.remove('typing-cursor'); if (cb) cb(); }
+      }, speed || 50);
+    }
+    function clearTyping() { if (typingInterval) { clearInterval(typingInterval); typingInterval = null; } }
+
+    // ===== Timer =====
+    function startTimer(min, imgName, onEnd) {
+      clearTimer();
+      let rem = min * 60;
+      tmBg.style.display = 'none';
+      tmArea.style.display = 'flex';
+      updTmr(rem);
+      timerInterval = setInterval(() => {
+        rem--;
+        updTmr(rem);
+        if (rem <= 0) { clearTimer(); tmArea.style.display = 'none'; if (onEnd) onEnd(); }
+      }, 1000);
+    }
+    function updTmr(s) { tmText.textContent = String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); }
+    function clearTimer() { if (timerInterval) { clearInterval(timerInterval); timerInterval = null; } }
+
+    // ===== Fanta =====
+    function showFanta(talk) {
+      document.getElementById('fantaArea').style.display = 'block';
+      if (talk) {
+        if (fantaTimer) clearInterval(fantaTimer);
+        let t = false;
+        fantaTimer = setInterval(() => {
+          t = !t; fi1.style.opacity = t ? 0 : 1; fi2.style.opacity = t ? 1 : 0;
+        }, 400);
+      }
+    }
+    function stopFantaTalk() {
+      if (fantaTimer) { clearInterval(fantaTimer); fantaTimer = null; }
+      fi1.style.opacity = 1; fi2.style.opacity = 0;
+    }
+    function hideFanta() {
+      stopFantaTalk();
+      document.getElementById('fantaArea').style.display = 'none';
+    }
+    function showFantaSmall(talk) {
+      const fa = document.getElementById('fantaArea');
+      fa.style.display = 'block';
+      fa.style.left = 'auto'; fa.style.right = '3%';
+      fa.style.bottom = '5.3%';
+      fa.style.transform = 'none';
+      fi1.style.height = '65dvh'; fi2.style.height = '65dvh';
+      if (talk) {
+        startFantaTalk();
+      } else {
+        stopFantaTalk();
+      }
+    }
+    function startFantaTalk() {
+      if (fantaTimer) clearInterval(fantaTimer);
+      let t = false;
+      fantaTimer = setInterval(() => {
+        t = !t; fi1.style.opacity = t ? 0 : 1; fi2.style.opacity = t ? 1 : 0;
+      }, 400);
+    }
+    function hideFantaSmall() {
+      stopFantaTalk();
+      const fa = document.getElementById('fantaArea');
+      fa.style.display = 'none';
+      fa.style.left = '50%'; fa.style.right = '';
+      fa.style.transform = 'translateX(-50%)';
+      fi1.style.height = '90dvh'; fi2.style.height = '90dvh';
+    }
+
+    // ===== Dialogue =====
+    function showDlg(text, oneLine, speed) {
+      dlgArea.querySelector('.dialogue-bg').src = 'image/' + (oneLine ? 'fanta_window_1line' : 'fanta_window') + '.png';
+      dlgArea.querySelector('.dialogue-bg').style.display = '';
+      dlgArea.classList.remove('center-text');
+      dlgArea.style.display = 'block';
+      if (text) typeT(text, speed);
+    }
+    function showCenterDlg(text, speed, cb) {
+      dlgArea.querySelector('.dialogue-bg').style.display = 'none';
+      dlgArea.classList.add('center-text');
+      dlgArea.style.display = 'block';
+      if (text) typeT(text, speed, cb);
+    }
+    function hideDlg() {
+      dlgArea.style.display = 'none';
+      dlgArea.classList.remove('center-text');
+      dlgArea.querySelector('.dialogue-bg').style.display = '';
+      dlgText.textContent = '';
+      clearTyping();
+    }
+
+    // ===== UI =====
+    function resetUI() {
+      bgEl.style.display = 'none';
+      for (let i = 1; i <= 4; i++) ov[i].style.display = 'none';
+      hideFanta(); hideDlg();
+      bbArea.style.display = 'none'; bbArea.style.opacity = '0'; tmArea.style.display = 'none';
+      vidArea.style.display = 'none'; popArea.style.display = 'none';
+      npImg.style.display = 'none';
+      tmText.style.top = ''; tmText.style.color = ''; tmText.style.fontSize = '';
+      clearTimer(); stopNarration(); nextPopupCb = null;
+      canShowNextPopup = false;
+    }
+
+    function setBg(src) {
+      bgEl.src = 'image/' + src; bgEl.style.display = 'block';
+      bgEl.className = 'full-bg fade-in';
+    }
+
+    function setOv(idx, src, css) {
+      const e = ov[idx]; if (!e) return;
+      e.src = 'image/' + src;
+      const d = { position: 'absolute', top: '10%', left: '50%', transform: 'translateX(-50%)', width: '80%', height: 'auto', zIndex: String(5 + idx), display: 'block' };
+      Object.assign(e.style, d, css || {});
+      e.className = 'phase-overlay fade-in';
+    }
+
+    function showNextPopup(cb) {
+      nextPopupCb = cb;
+      npImg.style.display = 'flex'; npImg.className = 'next-popup';
+      npImg.querySelector('.np-img').className = 'np-img popup-in';
+      playNarFile('sound/narration/narration_nextpopup.mp3');
+    }
+    function handleNextPopup() {
+      npImg.style.display = 'none';
+      if (nextPopupCb) { const c = nextPopupCb; nextPopupCb = null; c(); }
+    }
+
+    function chainNar(nums, onEach, onDone, gap) {
+      let i = 0;
+      function next() {
+        if (i >= nums.length) { if (onDone) onDone(); return; }
+        if (onEach) onEach(i, nums[i]);
+        playNarration(nums[i], () => {
+          i++;
+          if (gap && i < nums.length) after(gap, next);
+          else next();
+        });
+      }
+      next();
+    }
+
+    // ===== Texts =====
+    const TX = {
+      1: '안녕하세요 참가자 여러분.\n환영합니다.\n저는 여러분의 게임 진행을 도와드릴 인공지능 FANTA 입니다.',
+      2: '여러분들은 곧 시간의 영속성\n시뮬레이션에 접속하시게됩니다.\n접속에 앞서 제가 먼저 알내드릴 것이 있습니다.',
+      3: '본 시뮬레이션은 제한된 시간 안에서 플레이어의 판단과 선택을 기록합니다.\n플레이어는 배정된 인물의 입장에서 추리를 진행하게 됩니다.\n모든 플레이어에게는 아래와 같은 공통 목표가 주어집니다.',
+      10: '그럼 캐릭터 선택 화면으로 넘어가겠습니다.',
+    };
+
+    // ===== Phase Management =====
+    function goToPhase(n) {
+      console.log('→ Phase ' + n);
+      currentPhase = n;
+      resetUI();
+      allTurnsComplete = false;
+      if (n === 0) return;
+      document.getElementById('section0').style.display = 'none';
+      document.getElementById('section1').style.display = 'none';
+      gc.style.display = 'block';
+      if (PH[n]) PH[n]();
+    }
+
+    // ===== Phase Handlers =====
+    const OV_MAIN = { top: '5%', width: '90%' };
+    const OV_SUB = { top: '15%', width: '80%', zIndex: '6' };
+    const OV_IMG = { top: '20%', width: '70%', zIndex: '6' };
+    const OV_FULL = { top: '0', left: '0', width: '100%', height: '100%', objectFit: 'cover', transform: 'none' };
+
+    const PH = {
+      // Phase 1: Title → 페이드인(1초) → BGM1 → 3초 후 자동 진행
+      1: () => {
+        playEffect(1);
+        setBg('title.png');
+        timeChannel.postMessage({ action: 'showMap', map: 'map_denie' });
+        // 페이드인 완료(1초) 후 BGM 시작, BGM 시작 3초 후 다음 페이즈
+        after(1000, () => {
+          playBGM(1);
+          after(3000, () => goToPhase(2));
+        });
+      },
+
+      // Phase 2: fanta + narration1 + typing → 2초 뒤 다음
+      2: () => {
+        setBg('explain_bg.png');
+        triggerPinOn('time-1_pin_23');
+        showFanta(true); showDlg(TX[1], false, 145);
+        playNarration(1, () => { stopFantaTalk(); after(2000, () => { hideFanta(); hideDlg(); goToPhase(3); }); });
+      },
+
+      // Phase 3: narration2 + typing → fanta_1 → 2초 → effect2 → 다음
+      3: () => {
+        setBg('explain_bg.png');
+        showFanta(true); showDlg(TX[2], false, 140);
+        playNarration(2, () => {
+          stopFantaTalk();
+          after(2000, () => { playEffect(2); hideFanta(); hideDlg(); goToPhase(4); });
+        });
+      },
+
+      // Phase 4: narration3 + 중앙 타이핑 → 2초 뒤 하단박스 페이드인 → 나레이션 종료 2초 뒤 다음
+      4: () => {
+        setBg('explain_bg0.png');
+        showCenterDlg(TX[3], 140, () => {
+          after(500, () => {
+            bbImg.src = 'image/explain_3_box.png';
+            bbArea.style.display = 'block';
+            bbArea.style.opacity = '0';
+            requestAnimationFrame(() => { bbArea.style.opacity = '1'; });
+          });
+        });
+        playNarration(3, () => {
+          after(2000, () => { hideDlg(); goToPhase(5); });
+        });
+      },
+
+      // Phase 5: narration4~7 + box + 3 images in row (2초 gap)
+      5: () => {
+        setBg('explain_bg1.png');
+        setOv(1, 'explain_4_box.png', { top: '20%', width: '65%' });
+        const ROW = [
+          null,
+          { top: '40%', left: '8%', width: '28%', transform: 'none', zIndex: '6' },
+          { top: '40%', left: '36%', width: '28%', transform: 'none', zIndex: '6' },
+          { top: '40%', left: '64%', width: '28%', transform: 'none', zIndex: '6' }
+        ];
+        chainNar([4, 5, 6, 7], (i) => {
+          if (i === 0) playSfx(4);
+          if (i === 1) { setOv(2, 'explain_4_img1.png', ROW[1]); playSfx(5); }
+          if (i === 2) setOv(3, 'explain_4_img2.png', ROW[2]);
+          if (i === 3) setOv(4, 'explain_4_img3.png', ROW[3]);
+        }, () => after(2000, () => goToPhase(6)), 2000);
+      },
+
+      // Phase 6: explain_4_box 유지 + 1초 → explain_5_img + narration8 → 2초 → 다음
+      6: () => {
+        setBg('explain_bg1.png');
+        setOv(1, 'explain_4_box.png', { top: '20%', width: '65%' });
+        after(1000, () => {
+          setOv(2, 'explain_5_img.png', { top: '40%', width: '70%', zIndex: '6' });
+          playNarration(8, () => after(2000, () => goToPhase(7)));
+        });
+      },
+
+      // Phase 7: explain_4_box 유지 + 1초 → narration9~11 + 3 images in row (2초 gap) → 2초 → 다음
+      7: () => {
+        setBg('explain_bg1.png');
+        setOv(1, 'explain_4_box.png', { top: '20%', width: '65%' });
+        const ROW7 = [
+          { top: '40%', left: '9%', width: '28%', transform: 'none', zIndex: '6' },
+          { top: '40%', left: '37%', width: '28%', transform: 'none', zIndex: '6' },
+          { top: '40%', left: '66%', width: '28%', transform: 'none', zIndex: '6' }
+        ];
+        after(1000, () => {
+          chainNar([9, 10, 11], (i) => {
+            setOv(i + 2, 'explain_6_img' + (i + 1) + '.png', ROW7[i]);
+          }, () => after(2000, () => goToPhase(8)), 2000);
+        });
+      },
+
+      // Phase 8: 1초 → narration12 + img → 2초 → 다음
+      8: () => {
+        setBg('explain_bg1.png');
+        after(1000, () => {
+          setOv(2, 'explain_7_img.png', { top: '30%', width: '70%', zIndex: '6' });
+          playNarration(12, () => after(2000, () => goToPhase(9)));
+        });
+      },
+
+      // Phase 9: 1초 → narration13 + explain_8_img → 2초 → 다음
+      9: () => {
+        setBg('explain_bg1.png');
+        after(1000, () => {
+          setOv(2, 'explain_8_img.png', { top: '32%', width: '70%', zIndex: '6' });
+          playNarration(13, () => after(2000, () => goToPhase(10)));
+        });
+      },
+
+      // Phase 10: fanta + fanta_window_1line + TX[10] → narration14 → effect2 → 다음
+      10: () => {
+        setBg('explain_bg.png');
+        showFanta(true); showDlg(TX[10], true, 145);
+        dlgText.style.top = '27%';
+        playNarration(14, () => {
+          stopFantaTalk();
+          after(3000, () => { dlgText.style.top = ''; playEffect(2); hideFanta(); hideDlg(); goToPhase(11); });
+        });
+      },
+
+      // Phase 11: explain_10 → pin31 대기 (effect3 매번, effect1+전환 최종)
+      11: () => {
+        setBg('explain_10.png');
+        // pin31 handler manages this phase
+      },
+
+      // Phase 12: BGM1 pause → 1초 → intro.mp4 → 2초 → effect1 → 다음
+      12: () => {
+        fadeBGM(1000);
+        after(1000, () => {
+          vidArea.style.display = 'block';
+          vidEl.src = 'video/intro.mp4';
+          vidEl.play().catch(() => { });
+          vidEl.onended = () => {
+            vidArea.style.display = 'none';
+            after(2000, () => { playEffect(1); goToPhase(13); });
+          };
+        });
+      },
+
+      // Phase 13: BGM1 재개 + pin22 ON → 1초 → introduce1 → 5초 → 10분 timer
+      13: () => {
+        playBGM(1);
+        triggerPinOn('time-1_pin_22');
+        setBg('introduce1_bg.png');
+        after(2000, () => {
+          setBg('introduce1.png');
+          after(5000, () => {
+            canShowNextPopup = true;
+            startTimer(10, 'timer10', () => {
+              canShowNextPopup = false;
+              goToPhase(14);
+            });
+          });
+        });
+      },
+
+      // Phase 14: introduce2_bg → 1초 → introduce2 → 5초 → 3분 timer
+      14: () => {
+        setBg('introduce2_bg.png');
+        after(2000, () => {
+          setBg('introduce2.png');
+          after(5000, () => {
+            canShowNextPopup = true;
+            startTimer(3, 'timer3', () => {
+              canShowNextPopup = false;
+              goToPhase(15);
+            });
+          });
+        });
+      },
+
+      // Phase 15: investigate1_1 + map1 → 1초 → fanta(우측하단) + narration15 → 2초 → 다음
+      15: () => {
+        setBg('investigate1_1.png');
+        timeChannel.postMessage({ action: 'showMap', map: 'map1' });
+        showFantaSmall(false);
+        after(2000, () => {
+          startFantaTalk();
+          playNarration(15, () => {
+            stopFantaTalk();
+            after(2000, () => goToPhase(16));
+          });
+        });
+      },
+
+      // Phase 16: investigate1_2_1 → 1초 → fanta + narration16 → 2초 → 다음
+      16: () => {
+        setBg('investigate1_2.png');
+        showFantaSmall(false);
+        after(1000, () => {
+          startFantaTalk();
+          playNarration(16, () => {
+            stopFantaTalk();
+            after(2000, () => goToPhase(17));
+          });
+        });
+      },
+
+      // Phase 17: investigate1_3_1 → 1초 → fanta + narration17 → 2초 → 다음
+      17: () => {
+        setBg('investigate1_3.png');
+        showFantaSmall(false);
+        after(1000, () => {
+          startFantaTalk();
+          playNarration(17, () => {
+            stopFantaTalk();
+            after(2000, () => goToPhase(18));
+          });
+        });
+      },
+
+      // Phase 18: investigate1_4 → 5초 → 10분 timer + enableTouch(빅딜→엔진→시큐, 9턴)
+      18: () => {
+        setBg('investigate1_4.png');
+        timeChannel.postMessage({ action: 'showMap', map: 'map1' });
+        tmText.style.top = '46%';
+        after(5000, () => {
+          timeChannel.postMessage({
+            action: 'enableTouch',
+            turnOrder: ['빅딜', '엔진', '시큐', '빅딜', '엔진', '시큐', '빅딜', '엔진', '시큐'],
+            maxTurns: 9
+          });
+          canShowNextPopup = true;
+          startTimer(10, 'timer10', () => {
+            canShowNextPopup = false;
+            timeChannel.postMessage({ action: 'disableTouch' });
+            goToPhase(19);
+          });
+        });
+      },
+
+      // Phase 19: investigate2_1_1 + map2 → 1초 → fanta + narration18 → 2초 → 다음
+      19: () => {
+        setBg('investigate2_1.png');
+        timeChannel.postMessage({ action: 'showMap', map: 'map2' });
+        showFantaSmall(false);
+        after(2000, () => {
+          startFantaTalk();
+          playNarration(18, () => {
+            stopFantaTalk();
+            after(2000, () => goToPhase(20));
+          });
+        });
+      },
+
+      // Phase 20: investigate2_2 → 5초 → 10분 timer + enableTouch(시큐→엔진→빅딜, 6턴)
+      20: () => {
+        setBg('investigate2_2.png');
+        timeChannel.postMessage({ action: 'showMap', map: 'map2' });
+        tmText.style.top = '46.5%';
+        after(5000, () => {
+          timeChannel.postMessage({
+            action: 'enableTouch',
+            turnOrder: ['시큐', '엔진', '빅딜', '시큐', '엔진', '빅딜'],
+            maxTurns: 6, persistBlocked: true
+          });
+          canShowNextPopup = true;
+          startTimer(10, 'timer10', () => {
+            canShowNextPopup = false;
+            timeChannel.postMessage({ action: 'disableTouch' });
+            goToPhase(21);
+          });
+        });
+      },
+
+      // Phase 21: investigate3_1 분기 (pin32Stack)
+      21: () => {
+        setBg('investigate3_1_bg.png');
+        showFantaSmall(false);
+        after(1000, () => {
+          startFantaTalk();
+          if (pin32Stack) {
+            // pin32 감지됨 → phase1 경로
+            setBg('investigate3_1_phase1_1.png');
+            playNarSub(19, 1, () => {
+              stopFantaTalk();
+              after(2000, () => goToPhase(22))
+            });
+          } else {
+            // pin32 미감지 → phase2 경로 (복합 시퀀스)
+            setBg('investigate3_1_phase2_1.png');
+            after(2000, () => triggerPinOnAndOff('time-1_pin_26'));
+            playNarSub(19, 2, () => {
+              stopFantaTalk();
+              after(2000, () => {
+                setBg('investigate3_1_phase2_2.png');
+                startFantaTalk();
+                playNarSub(19, 1, () => {
+                  stopFantaTalk();
+                  after(2000, () => goToPhase(22))
+                });
+              });
+            });
+          }
+        });
+      },
+
+      // Phase 22: investigate3_2 → 5초 → 15분 timer + enableTouch(엔진→빅딜→시큐, 6턴)
+      22: () => {
+        setBg('investigate3_2.png');
+        timeChannel.postMessage({ action: 'showMap', map: 'map2' });
+        tmText.style.top = '46%';
+        after(5000, () => {
+          timeChannel.postMessage({
+            action: 'enableTouch',
+            turnOrder: ['엔진', '빅딜', '시큐', '엔진', '빅딜', '시큐'],
+            maxTurns: 6, persistBlocked: true
+          });
+          canShowNextPopup = true;
+          startTimer(15, 'timer15', () => {
+            canShowNextPopup = false;
+            timeChannel.postMessage({ action: 'disableTouch' });
+            goToPhase(23);
+          });
+        });
+      },
+
+      // Phase 23: final1 → 5초 → 15분 timer, 5분 경과 시 자동 진행
+      23: () => {
+        setBg('final1.png');
+        timeChannel.postMessage({ action: 'showMap', map: 'map2' });
+        timeChannel.postMessage({ action: 'disableTouch' });
+        tmText.style.color = 'black';
+        tmText.style.top = '30%';
+        tmText.style.fontSize = '430px';
+        tmBg.style.display = 'none';
+        tmArea.style.display = 'flex';
+        updTmr(300);
+        after(5000, () => {
+          canShowNextPopup = true;
+          startTimer(5, 'timer5', () => {
+            canShowNextPopup = false;
+            goToPhase(24);
+          });
+        });
+      },
+
+      // Phase 24: vote → 2초 → pin49 ON/OFF, pin31 비활성, 아무 투표핀 → 다음
+      24: () => {
+        pin31Disabled = true;
+        setBg('vote.png');
+        after(2000, () => {
+          triggerPinOnAndOff('time-1_pin_49');
+        });
+      },
+
+      // Phase 25: truth_bg → 2초 → truth_text + fanta + narration20 → 2초 → 다음
+      25: () => {
+        setBg('explain_bg.png');
+        after(2000, () => {
+          showFanta(true);
+          setOv(1, 'truth_text.png', { top: 'auto', bottom: '5%', width: '80%', zIndex: '12' });
+          playNarration(20, () => {
+            after(2000, () => {
+              hideFanta();
+              goToPhase(26)
+            });
+          });
+        });
+      },
+
+      // Phase 26: BGM1 종료 + pin22 OFF → 2초 → truth.mp4 → pin22 ON → 2초 → 다음
+      26: () => {
+        stopBGM();
+        triggerPinOff('time-1_pin_22');
+        after(2000, () => {
+          vidArea.style.display = 'block';
+          vidEl.src = 'video/ending.mp4';
+          vidEl.play().catch(() => { });
+          vidEl.onended = () => {
+            vidArea.style.display = 'none';
+            triggerPinOn('time-1_pin_22');
+            after(2000, () => goToPhase(27));
+          };
+        });
+      },
+
+      // Phase 27: BGM2 시작 + truth.png → 2초 → narration21 → 2초 → 다음
+      27: () => {
+        playBGM(2);
+        setBg('truth.png');
+        after(2000, () => {
+          playNarration(21, () => after(2000, () => goToPhase(28)));
+        });
+      },
+
+      // Phase 28: analysis - correct/wrong 분기 → 5초 자동 진행
+      28: () => {
+        setBg('analysis_bg.png');
+        const bdOk = pin34Activated || pin35Activated;
+        const scOk = pin38Activated;
+        const enOk = pin41Activated;
+        const isCorrect = (bdOk && scOk) || (bdOk && enOk) || (scOk && enOk);
+
+        after(2000, () => {
+          setOv(1, isCorrect ? 'correct.png' : 'wrong.png', { top: 'auto', bottom: '0%', left: '50%', transform: 'translateX(-50%)', width: '70%', zIndex: '5' });
+          playNarration(isCorrect ? 22 : 23, () => { });
+          after(8000, () => goToPhase(29));
+        });
+      },
+
+      // Phase 29: achievements → 5초 자동 진행
+      29: () => {
+        setBg('analysis_bg_1.png');
+        const bi = pin34Activated ? 'big_past.png' : (pin35Activated ? 'big_present.png' : 'big_escape.png');
+        const si = pin37Activated ? 'seq_erase.png' : (pin38Activated ? 'seq_repent.png' : 'seq_freedom.png');
+        const ei = pin40Activated ? 'engine_depair.png' : (pin41Activated ? 'engine_ego.png' : 'engine_save.png');
+        setOv(1, bi, { top: '65%', left: '14%', width: '20%', transform: 'none' });
+        setOv(2, si, { top: '65%', left: '46%', width: '20%', transform: 'none', zIndex: '6' });
+        setOv(3, ei, { top: '65%', left: '80%', width: '20%', transform: 'none', zIndex: '7' });
+        after(8000, () => goToPhase(30));
+      },
+
+      // Phase 30: sub_1 → right waitTouch
+      30: () => {
+        setBg('sub_1.png');
+        timeChannel.postMessage({ action: 'waitTouch' });
+      },
+
+      // Phase 31: sub_bg → 2초 → narration24 → 5초 → 10min timer + map3
+      31: () => {
+        setBg('sub_bg.png');
+        tmText.style.top = '38%';
+        tmText.style.fontSize = '430px';
+        tmBg.style.display = 'none';
+        updTmr(600);
+        after(2000, () => {
+          tmArea.style.display = 'flex';
+          playNarration(24, () => {
+            after(5000, () => {
+              timeChannel.postMessage({ action: 'showMap', map: 'map3' });
+              startTimer(10, 'timer10', () => {
+                stopBGM();
+                goToPhase(32);
+              });
+            });
+          });
+        });
+      },
+
+      // Phase 32: 검정 → title+credit_bg 2초 fade → BGM3 → 크레딧 타이핑
+      32: () => {
+        stopBGM();
+        bgEl.style.display = 'none';
+        setOv(1, 'title.png', { top: '0', left: '0', width: '100%', height: '100%', objectFit: 'cover', transform: 'none', opacity: '0' });
+        after(100, () => {
+          ov[1].style.transition = 'opacity 2s ease-in';
+          ov[1].style.opacity = '1';
+        });
+        timeChannel.postMessage({ action: 'showCredit' });
+        after(2500, () => playBGM(3));
+      }
+    };
+
+    // ===== READ PIN STATES =====
+    let pin22Activated = false, pin23Activated = false, pin24Activated = false, pin25Activated = false;
+    let pin26Activated = false, pin27Activated = false, pin28Activated = false, pin29Activated = false, pin30Activated = false;
+    let pin31Activated = false, pin32Activated = false, pin33Activated = false;
+    let pin34Activated = false, pin35Activated = false, pin36Activated = false;
+    let pin37Activated = false, pin38Activated = false, pin39Activated = false;
+    let pin40Activated = false, pin41Activated = false, pin42Activated = false;
+    let pin43Activated = false, pin44Activated = false, pin45Activated = false;
+    let pin46Activated = false, pin47Activated = false, pin48Activated = false;
+    let pin49Activated = false, pin50Activated = false;
+
+    const monitoredPins = [];
+    for (let i = 22; i <= 50; i++) monitoredPins.push('time-2_pin_' + i);
+
+    // ===== PIN ACTIONS =====
+    const pinActions_on = {
+      'time-2_pin_22': () => {
+        if (pin22Activated) return; pin22Activated = true;
+        console.log('goToPhase(1)')
+        goToPhase(1);
+      },
+      'time-2_pin_23': () => {
+        if (pin23Activated) return; pin23Activated = true;
+        resetUI();
+        document.querySelectorAll('.section,#section0,#gameContainer').forEach(e => e.style.display = 'none');
+        document.getElementById('sectionReset').style.display = 'flex';
+        const pins = []; for (let i = 22; i <= 51; i++) pins.push(i);
+        let idx = 0;
+        const iv = setInterval(() => {
+          for (let j = 0; j < 5 && idx < pins.length; j++, idx++) triggerPinOff('time-1_pin_' + pins[idx]);
+          if (idx >= pins.length) { clearInterval(iv); timeChannel.postMessage({ action: 'reload' }); after(1000, () => location.reload()); }
+        }, 1000);
+      },
+      'time-2_pin_24': () => { if (pin24Activated) return; pin24Activated = true; },
+      'time-2_pin_25': () => { if (pin25Activated) return; pin25Activated = true; },
+      'time-2_pin_26': () => { if (pin26Activated) return; pin26Activated = true; goToPhase(18); },
+      'time-2_pin_27': () => { if (pin27Activated) return; pin27Activated = true; goToPhase(20); },
+      'time-2_pin_28': () => { if (pin28Activated) return; pin28Activated = true; goToPhase(22); },
+      'time-2_pin_29': () => { if (pin29Activated) return; pin29Activated = true; goToPhase(23); },
+      'time-2_pin_30': () => { if (pin30Activated) return; pin30Activated = true; goToPhase(31); },
+
+      'time-2_pin_31': () => {
+        if (pin31Disabled || pin31Cooldown) return;
+        pin31Cooldown = true;
+        setTimeout(() => { pin31Cooldown = false; }, 1000);
+
+        if (currentPhase < 24) {
+          playEffect(3);
+        }
+
+        // Phase 11: pin31 → Phase 12
+        if (currentPhase === 11) {
+          goToPhase(12);
+          return;
+        }
+
+        // Phase 13: 첫 pin31 → 팝업, 두 번째 pin31 → Phase 14
+        if (currentPhase === 13) {
+          if (nextPopupCb) {
+            handleNextPopup();
+          } else if (canShowNextPopup) {
+            showNextPopup(() => {
+              canShowNextPopup = false;
+              clearTimer(); tmArea.style.display = 'none';
+              goToPhase(14);
+            });
+          }
+          return;
+        }
+
+        // Phase 14: 첫 pin31 → 팝업, 두 번째 pin31 → Phase 15
+        if (currentPhase === 14) {
+          if (nextPopupCb) {
+            handleNextPopup();
+          } else if (canShowNextPopup) {
+            showNextPopup(() => {
+              canShowNextPopup = false;
+              clearTimer(); tmArea.style.display = 'none';
+              goToPhase(15);
+            });
+          }
+          return;
+        }
+
+        // 타이머 구간에서 턴 완료 후에만 pin31 → 팝업 표시
+        if (canShowNextPopup) {
+          if ([18, 20, 22].includes(currentPhase) && !allTurnsComplete) return;
+          if (nextPopupCb) {
+            handleNextPopup();
+          } else if (canShowNextPopup) {
+            showNextPopup(() => {
+              canShowNextPopup = false;
+              clearTimer(); tmArea.style.display = 'none';
+              timeChannel.postMessage({ action: 'disableTouch' });
+              goToPhase(currentPhase + 1);
+            });
+          }
+          return;
+        }
+
+        // Phase 23: 첫 pin31 → 팝업, 두 번째 pin31 → Phase 15
+        if (currentPhase === 23) {
+          if (nextPopupCb) {
+            handleNextPopup();
+          } else if (canShowNextPopup) {
+            showNextPopup(() => {
+              canShowNextPopup = false;
+              clearTimer(); tmArea.style.display = 'none';
+              goToPhase(24);
+            });
+          }
+          return;
+        }
+      },
+
+      'time-2_pin_32': () => {
+        if (currentPhase >= 18 && currentPhase <= 21) {
+          if (pin32Activated) return; pin32Activated = true;
+          pin32Stack = true;
+          after(1000, () => {
+            new Audio('sound/narration/narration%2319_2.mp3').play().catch(() => { });
+          });
+        }
+      },
+
+      'time-2_pin_33': () => {
+        timeChannel.postMessage({ action: 'showCapsulePopup', capsuleType: 'internal', pin: 'time-1_pin_43' });
+      },
+
+      'time-2_pin_34': () => { pin34Activated = true; checkVote(); },
+      'time-2_pin_35': () => { pin35Activated = true; checkVote(); },
+      'time-2_pin_36': () => { pin36Activated = true; checkVote(); },
+      'time-2_pin_37': () => { pin37Activated = true; checkVote(); },
+      'time-2_pin_38': () => { pin38Activated = true; checkVote(); },
+      'time-2_pin_39': () => { pin39Activated = true; checkVote(); },
+      'time-2_pin_40': () => { pin40Activated = true; checkVote(); },
+      'time-2_pin_41': () => { pin41Activated = true; checkVote(); },
+      'time-2_pin_42': () => { pin42Activated = true; checkVote(); },
+
+      'time-2_pin_43': () => { },
+      'time-2_pin_44': () => { },
+      'time-2_pin_45': () => { },
+      'time-2_pin_46': () => { },
+      'time-2_pin_47': () => { },
+      'time-2_pin_48': () => {
+        // Phase 31: 조기 종료
+        if (currentPhase === 31) {
+          clearTimer(); tmArea.style.display = 'none';
+          stopBGM();
+          goToPhase(32);
+        }
+      },
+
+      'time-2_pin_49': () => {
+        if (pin49Activated) return; pin49Activated = true;
+        triggerPinOn('time-1_pin_51');
+        after(5000, () => triggerPinOff('time-1_pin_51'));
+        timeChannel.postMessage({ action: 'blockLock' });
+      },
+
+      'time-2_pin_50': () => {
+        timeChannel.postMessage({ action: 'showCapsulePopup', capsuleType: 'external', pin: 'time-1_pin_44' });
+      }
+    };
+
+    function checkVote() {
+      if (currentPhase !== 24) return;
+      const any = pin34Activated || pin35Activated || pin36Activated ||
+        pin37Activated || pin38Activated || pin39Activated ||
+        pin40Activated || pin41Activated || pin42Activated;
+      if (any) goToPhase(25);
+    }
+
+    // 핀 상태 업데이트 함수 (test)
+    function updatePinDisplay(pinIdentifier) {
+      if (!isInitialized) return; // 초기화 전에는 신호 무시
+
+      if (pinActions_on[pinIdentifier] && window[pinIdentifier] === true) {
+        pinActions_on[pinIdentifier]();
+      }
+    }
+    setInterval(() => {
+      Object.keys(pinActions_on).forEach(updatePinDisplay);
+    }, 200);
+
+    // 핀 상태 업데이트 함수 (real)
+    // function updatePinDisplay(pinIdentifier) {
+    //   if (window[pinIdentifier] === true) {
+    //     if (pinActions_on[pinIdentifier]) {
+    //       pinActions_on[pinIdentifier]();
+    //     }
+    //   }
+    // }
+
+    // ===== BroadcastChannel from right =====
+    timeChannel.onmessage = (ev) => {
+      const d = ev.data;
+      console.log('From right:', d);
+      if (d.action === 'touchActivated' && d.pin) {
+        triggerPinOn(d.pin);
+        after(5000, () => triggerPinOff(d.pin));
+      }
+      if (d.action === 'allTurnsComplete') {
+        allTurnsComplete = true;
+      }
+      if (d.action === 'subTouchComplete' && currentPhase === 30) goToPhase(31);
+    };
+
+    // ===== Init =====
+    $('#section0').click(function () {
+      isInitialized = true;
+      document.getElementById('section0').style.display = 'none';
+      document.getElementById('section1').style.display = 'flex';
+    });
+
+    let resetClicks = 0, isResetting = false;
+    $('#hiddenResetButton').click(function () {
+      if (isResetting) return;
+      resetClicks++;
+      if (resetClicks >= 10) {
+        isResetting = true; resetUI(); stopBGM();
+        document.querySelectorAll('.section,#section0,#gameContainer').forEach(e => e.style.display = 'none');
+        document.getElementById('sectionReset').style.display = 'flex';
+        const pins = []; for (let i = 22; i <= 51; i++) pins.push(i);
+        let idx = 0;
+        const iv = setInterval(() => {
+          for (let j = 0; j < 5 && idx < pins.length; j++, idx++) triggerPinOff('time-1_pin_' + pins[idx]);
+          if (idx >= pins.length) { clearInterval(iv); timeChannel.postMessage({ action: 'reload' }); after(1000, () => location.reload()); }
+        }, 1000);
+      }
+    });
+  </script>
+  <script src="../script.js"></script>
+</body>
+
+</html>

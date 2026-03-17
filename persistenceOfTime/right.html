@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>time-right</title>
+  <script src="../jquery.min.js" type='text/javascript'></script>
+  <link rel="stylesheet" href="../style.css" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+
+<body>
+  <div id="overlay">연결이 끊겼습니다.</div>
+  <div id="arduinoContainer"></div>
+
+  <!-- Phase 0: Init -->
+  <div id="section0"
+    style="width:100%;height:100dvh;display:flex;justify-content:center;align-items:center;color:red;font-size:40px;">
+    정상적인 초기화를 위해 화면을 터치해 주세요
+  </div>
+
+  <!-- Standby -->
+  <div id="section1" class="section"></div>
+
+  <!-- Map Container -->
+  <div id="mapContainer">
+    <img id="mapImg" class="map-img" />
+
+    <!-- Turn indicator -->
+    <div id="turnIndicator">
+      <img id="turnNameImg" class="turn-name" />
+      <div id="turnLabel"
+        style="color:#222;font-family:'Pretendard',sans-serif;font-size:clamp(16px,2.5vw,28px);text-align:center;font-weight:bold;">
+      </div>
+    </div>
+
+    <!-- Touch points container -->
+    <div id="touchPoints" style="position:absolute;top:0;left:0;width:100%;height:100%;"></div>
+
+    <!-- Room denied overlay -->
+    <img id="roomDeniedImg" src="image/room_denie.png" style="position:absolute;display:none;pointer-events:none;z-index:9;width:20%;object-fit:contain;" />
+
+    <!-- Touch confirmation popup -->
+    <div id="touchPopup">
+      <div class="popup-content">
+        <img class="popup-bg" src="image/touch_popup.png" />
+        <div class="popup-buttons">
+          <div id="touchYes" style="width:310px;height:100px;user-select:none;"></div>
+          <div id="touchNo" style="width:310px;height:100px;user-select:none;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Capsule investigation popup -->
+    <div id="capsulePopup"
+      style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:55;display:none;justify-content:center;align-items:center;background:rgba(0,0,0,0.5);">
+      <div style="position:relative;display:flex;flex-direction:column;align-items:center;">
+        <img id="capsulePopupImg" style="max-width:70%;" />
+        <div style="display:flex;gap:20px;margin-top:-5%;z-index:56;">
+          <div id="capsuleYes" style="width:310px;height:100px;user-select:none;background:#3B82F6;color:white;font-family:'Pretendard',sans-serif;font-size:clamp(20px,3vw,36px);font-weight:bold;display:flex;justify-content:center;align-items:center;border-radius:16px;cursor:pointer;transition:transform 0.15s;">YES</div>
+          <div id="capsuleNo" style="width:310px;height:100px;user-select:none;background:#EF4444;color:white;font-family:'Pretendard',sans-serif;font-size:clamp(20px,3vw,36px);font-weight:bold;display:flex;justify-content:center;align-items:center;border-radius:16px;cursor:pointer;transition:transform 0.15s;">NO</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Credit screen -->
+  <div id="creditScreen"
+    style="display:none;width:100%;height:100dvh;position:absolute;top:0;left:0;z-index:60;overflow:hidden;">
+    <img src="image/credit_bg.png" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;" />
+    <div id="creditText" style="position:absolute;top:23%;left:55%;transform:translateX(-50%);width:55%;z-index:61;font-family:'Macho',sans-serif;color:white;font-size:48px;line-height:1.5;text-shadow:1px 1px 4px rgba(0,0,0,0.8);"></div>
+  </div>
+
+  <!-- Sub touch area -->
+  <div id="subTouchArea"
+    style="display:none;width:100%;height:100dvh;position:relative;background:black;overflow:hidden;">
+    <div style="position:absolute;top:30%;left:50%;transform:translateX(-50%);width:60%;height:40%;cursor:pointer;border:2px dashed rgba(255,255,255,0.3);border-radius:10px;"
+      id="subTouchZone"></div>
+  </div>
+
+  <!-- Reset button -->
+  <div id="resetButton"
+    style="position:absolute;top:20px;right:20px;width:100px;height:100px;z-index:200;-webkit-tap-highlight-color:transparent;user-select:none;">
+  </div>
+
+  <script>
+    const timeChannel = new BroadcastChannel('time_channel');
+    let isInitialized = false;
+
+    // ===== Touch System State =====
+    let touchEnabled = false;
+    let currentTurn = 0;
+    let turnOrder = [];
+    let maxTurns = 0;
+    let usedPoints = new Set();
+    let globalUsedPoints = new Set(); // Persists across investigations
+    let pendingTouchPoint = null;
+    let currentMap = null;
+    let lockBlocked = false; // Lock point blocked by pin49
+    let pendingCapsule = null; // Pending capsule popup data
+
+    // ===== Team Room Mapping =====
+    const TEAM_ROOMS = {
+      '빅딜': ['bd1', 'bd2', 'bd3', 'eye2'],
+      '엔진': ['eng1', 'eng2', 'eng3', 'eye3'],
+      '시큐': ['sec1', 'sec2', 'sec3', 'lock1']
+    };
+
+    // 각 팀 room_denie 위치 (%, x/y 중심 기준)
+    const ROOM_DENIE_POS = {
+      '빅딜': { x: 20, y: 77 },
+      '엔진': { x: 77.5, y: 77 },
+      '시큐': { x: 77.5, y: 40.5 }
+    };
+
+    // ===== DOM =====
+    const mapContainer = document.getElementById('mapContainer');
+    const mapImg = document.getElementById('mapImg');
+    const touchPointsEl = document.getElementById('touchPoints');
+    const turnIndicator = document.getElementById('turnIndicator');
+    const turnNameImg = document.getElementById('turnNameImg');
+    const turnLabel = document.getElementById('turnLabel');
+    const touchPopup = document.getElementById('touchPopup');
+    const subTouchArea = document.getElementById('subTouchArea');
+    const capsulePopup = document.getElementById('capsulePopup');
+    const capsulePopupImg = document.getElementById('capsulePopupImg');
+
+    // ===== Touch Point Definitions =====
+    const POINTS = {
+      map1: [
+        // 박사의 연구실 (좌상단)
+        { id: 'eye1', label: '박사 눈', x: 12.9, y: 45, pin: 'time-1_pin_28' },
+        { id: 'doc1', label: '박사 1', x: 14.8, y: 33.4, pin: 'time-1_pin_31' },
+        { id: 'doc2', label: '박사 2', x: 28.1, y: 43.6, pin: 'time-1_pin_32' },
+        { id: 'doc3', label: '박사 3', x: 24.5, y: 25, pin: 'time-1_pin_33' },
+
+        // 빅딜의 손님방 (좌하단)
+        { id: 'eye2', label: '빅딜 눈', x: 7.3, y: 76.9, pin: 'time-1_pin_29' },
+        { id: 'bd1', label: '빅딜 1', x: 8.8, y: 82.7, pin: 'time-1_pin_34' },
+        { id: 'bd2', label: '빅딜 2', x: 9.1, y: 65.3, pin: 'time-1_pin_35' },
+        { id: 'bd3', label: '빅딜 3', x: 29.1, y: 76.2, pin: 'time-1_pin_36' },
+
+        // 시큐의 보안실 (우상단)
+        { id: 'sec1', label: '시큐 1', x: 68.7, y: 26.7, pin: 'time-1_pin_40' },
+        { id: 'sec2', label: '시큐 2', x: 84.1, y: 44.3, pin: 'time-1_pin_41' },
+        { id: 'sec3', label: '시큐 3', x: 83.1, y: 25.3, pin: 'time-1_pin_42' },
+
+        // 엔진의 연구실 (우하단)
+        { id: 'eye3', label: '엔진 눈', x: 86.8, y: 80.7, pin: 'time-1_pin_30' },
+        { id: 'eng1', label: '엔진 1', x: 73.2, y: 82.5, pin: 'time-1_pin_37' },
+        { id: 'eng2', label: '엔진 2', x: 70.1, y: 65, pin: 'time-1_pin_38' },
+        { id: 'eng3', label: '엔진 3', x: 81.8, y: 64.3, pin: 'time-1_pin_39' },
+      ],
+      map2: [
+        // 박사의 연구실 (좌상단)
+        { id: 'eye1', label: '박사 눈', x: 12.9, y: 45, pin: 'time-1_pin_28' },
+        { id: 'doc1', label: '박사 1', x: 14.8, y: 33.4, pin: 'time-1_pin_31' },
+        { id: 'doc2', label: '박사 2', x: 28.1, y: 43.6, pin: 'time-1_pin_32' },
+        { id: 'doc3', label: '박사 3', x: 24.5, y: 25, pin: 'time-1_pin_33' },
+
+        // 빅딜의 손님방 (좌하단)
+        { id: 'eye2', label: '빅딜 눈', x: 7.3, y: 76.9, pin: 'time-1_pin_29' },
+        { id: 'bd1', label: '빅딜 1', x: 8.8, y: 82.7, pin: 'time-1_pin_34' },
+        { id: 'bd2', label: '빅딜 2', x: 9.1, y: 65.3, pin: 'time-1_pin_35' },
+        { id: 'bd3', label: '빅딜 3', x: 29.1, y: 76.2, pin: 'time-1_pin_36' },
+
+        // 시큐의 보안실 (우상단)
+        // { id: 'lock1', label: '자물쇠', x: 87, y: 33.6, pin: 'time-1_pin_51' },
+        { id: 'sec1', label: '시큐 1', x: 68.7, y: 26.7, pin: 'time-1_pin_40' },
+        { id: 'sec2', label: '시큐 2', x: 84.1, y: 44.3, pin: 'time-1_pin_41' },
+        { id: 'sec3', label: '시큐 3', x: 83.1, y: 25.3, pin: 'time-1_pin_42' },
+
+        // 엔진의 연구실 (우하단)
+        { id: 'eye3', label: '엔진 눈', x: 86.8, y: 80.7, pin: 'time-1_pin_30' },
+        { id: 'eng1', label: '엔진 1', x: 73.2, y: 82.5, pin: 'time-1_pin_37' },
+        { id: 'eng2', label: '엔진 2', x: 70.1, y: 65, pin: 'time-1_pin_38' },
+        { id: 'eng3', label: '엔진 3', x: 81.8, y: 64.3, pin: 'time-1_pin_39' },
+
+        // { id: 'cap1', label: '캡슐 내부', x: 45, y: 35, pin: 'time-1_pin_43' },
+        // { id: 'cap2', label: '캡슐 외부', x: 55, y: 55, pin: 'time-1_pin_44' },
+        { id: 'tes1', label: '증언 1', x: 37, y: 78.5, pin: 'time-1_pin_45' },
+        { id: 'tes2', label: '증언 2', x: 50, y: 78.5, pin: 'time-1_pin_46' },
+        { id: 'tes3', label: '증언 3', x: 37, y: 84.5, pin: 'time-1_pin_47' },
+        { id: 'tes4', label: '증언 4', x: 50, y: 84.5, pin: 'time-1_pin_48' },
+      ],
+      map3: [
+        // 박사의 연구실 (좌상단)
+        { id: 'eye1', label: '박사 눈', x: 12.9, y: 45, pin: 'time-1_pin_28' },
+        { id: 'doc1', label: '박사 1', x: 14.8, y: 33.4, pin: 'time-1_pin_31' },
+        { id: 'doc2', label: '박사 2', x: 28.1, y: 43.6, pin: 'time-1_pin_32' },
+        { id: 'doc3', label: '박사 3', x: 24.5, y: 25, pin: 'time-1_pin_33' },
+
+        // 빅딜의 손님방 (좌하단)
+        { id: 'eye2', label: '빅딜 눈', x: 7.3, y: 76.9, pin: 'time-1_pin_29' },
+        { id: 'bd1', label: '빅딜 1', x: 8.8, y: 82.7, pin: 'time-1_pin_34' },
+        { id: 'bd2', label: '빅딜 2', x: 9.1, y: 65.3, pin: 'time-1_pin_35' },
+        { id: 'bd3', label: '빅딜 3', x: 29.1, y: 76.2, pin: 'time-1_pin_36' },
+
+        // 시큐의 보안실 (우상단)
+        // { id: 'lock1', label: '자물쇠', x: 87, y: 33.6, pin: 'time-1_pin_51' },
+        { id: 'sec1', label: '시큐 1', x: 68.7, y: 26.7, pin: 'time-1_pin_40' },
+        { id: 'sec2', label: '시큐 2', x: 84.1, y: 44.3, pin: 'time-1_pin_41' },
+        { id: 'sec3', label: '시큐 3', x: 83.1, y: 25.3, pin: 'time-1_pin_42' },
+
+        // 엔진의 연구실 (우하단)
+        { id: 'eye3', label: '엔진 눈', x: 86.8, y: 80.7, pin: 'time-1_pin_30' },
+        { id: 'eng1', label: '엔진 1', x: 73.2, y: 82.5, pin: 'time-1_pin_37' },
+        { id: 'eng2', label: '엔진 2', x: 70.1, y: 65, pin: 'time-1_pin_38' },
+        { id: 'eng3', label: '엔진 3', x: 81.8, y: 64.3, pin: 'time-1_pin_39' },
+
+        // { id: 'cap1', label: '캡슐 내부', x: 45, y: 35, pin: 'time-1_pin_43' },
+        // { id: 'cap2', label: '캡슐 외부', x: 55, y: 55, pin: 'time-1_pin_44' },
+        { id: 'tes1', label: '증언 1', x: 37, y: 78.5, pin: 'time-1_pin_45' },
+        { id: 'tes2', label: '증언 2', x: 50, y: 78.5, pin: 'time-1_pin_46' },
+        { id: 'tes3', label: '증언 3', x: 37, y: 84.5, pin: 'time-1_pin_47' },
+        { id: 'tes4', label: '증언 4', x: 50, y: 84.5, pin: 'time-1_pin_48' },
+      ]
+    };
+
+    // ===== Get blocked IDs for current turn's team =====
+    function getBlockedForTurn() {
+      if (currentTurn >= maxTurns) return [];
+      const team = turnOrder[currentTurn];
+      return TEAM_ROOMS[team] || [];
+    }
+
+    // ===== Map Display =====
+    function showMap(name) {
+      currentMap = name;
+      document.getElementById('section1').style.display = 'none';
+      subTouchArea.style.display = 'none';
+      mapContainer.style.display = 'block';
+      mapImg.src = 'image/' + name + '.png';
+      mapImg.className = 'map-img fade-in';
+      disableTouchUI();
+
+      // enableTouch에서 turnIndicator 표시
+    }
+
+    // ===== Touch Points Rendering =====
+    function renderTouchPoints(mapName) {
+      touchPointsEl.innerHTML = '';
+      const points = POINTS[mapName];
+      if (!points) return;
+
+      const blockedIds = getBlockedForTurn();
+
+      points.forEach(pt => {
+        const isUsed = usedPoints.has(pt.id) || globalUsedPoints.has(pt.id);
+        const isBlocked = blockedIds.includes(pt.id);
+        const isLockBlocked = (pt.id === 'lock1' && lockBlocked);
+
+        if (isUsed || isLockBlocked) {
+          const img = document.createElement('img');
+          img.src = 'image/touch_denie.png';
+          const tesOffset = pt.id.startsWith('tes') ? 4 : 0;
+          img.style.cssText = 'position:absolute;left:' + (pt.x + tesOffset) + '%;top:' + pt.y + '%;transform:translate(-12%,-14%);width:4%;object-fit:contain;pointer-events:none;';
+          touchPointsEl.appendChild(img);
+        } else {
+          const el = document.createElement('div');
+          let cls = 'touch-point';
+          if (isBlocked) cls += ' blocked';
+          else if (touchEnabled) cls += ' active';
+          el.className = cls;
+          el.style.left = pt.x + '%';
+          el.style.top = pt.y + '%';
+          if (pt.id.startsWith('tes')) {
+            el.style.width = '200px';
+            el.style.height = '40px';
+            el.style.aspectRatio = 'auto';
+            el.style.borderRadius = '10px';
+          }
+          el.setAttribute('data-id', pt.id);
+          el.setAttribute('data-pin', pt.pin);
+          el.setAttribute('data-label', pt.label);
+          el.title = pt.label;
+          el.addEventListener('click', () => onTouchPoint(pt));
+          touchPointsEl.appendChild(el);
+        }
+      });
+    }
+
+    // ===== Enable Touch =====
+    function enableTouch(order, max, persist) {
+      touchEnabled = true;
+      currentTurn = 0;
+      turnOrder = order;
+      maxTurns = max;
+
+      if (persist) {
+        // Keep globalUsedPoints, merge into usedPoints
+        usedPoints = new Set(globalUsedPoints);
+      } else {
+        usedPoints = new Set();
+      }
+
+      renderTouchPoints(currentMap);
+      showTurnIndicator();
+      activatePoints();
+    }
+
+    function disableTouch() {
+      touchEnabled = false;
+      disableTouchUI();
+    }
+
+    function disableTouchUI() {
+      touchPointsEl.querySelectorAll('.touch-point').forEach(el => {
+        el.classList.remove('active');
+      });
+      turnIndicator.style.display = 'none';
+      document.getElementById('roomDeniedImg').style.display = 'none';
+      touchPopup.style.display = 'none';
+    }
+
+    function activatePoints() {
+      renderTouchPoints(currentMap);
+      updateRoomDenied();
+    }
+
+    function updateRoomDenied() {
+      const img = document.getElementById('roomDeniedImg');
+      if (currentTurn >= maxTurns || !touchEnabled) {
+        img.style.display = 'none';
+        return;
+      }
+      const team = turnOrder[currentTurn];
+      const pos = ROOM_DENIE_POS[team];
+      if (!pos) { img.style.display = 'none'; return; }
+      img.style.left = pos.x + '%';
+      img.style.top = pos.y + '%';
+      img.style.transform = 'translate(-50%,-50%)';
+      img.style.display = 'block';
+    }
+
+    // ===== Turn Indicator =====
+    function showTurnIndicator() {
+      if (currentTurn >= maxTurns) {
+        turnIndicator.style.display = 'none';
+        return;
+      }
+      const team = turnOrder[currentTurn];
+      turnNameImg.style.display = 'none';
+      turnLabel.textContent = '현재 ' + team + '의 차례입니다';
+      turnIndicator.style.display = 'block';
+    }
+
+    // ===== Touch Point Click =====
+    function onTouchPoint(pt) {
+      if (!touchEnabled) return;
+      if (usedPoints.has(pt.id) || globalUsedPoints.has(pt.id)) return;
+      if (currentTurn >= maxTurns) return;
+
+      // Check if this point is blocked for current team
+      const blockedIds = getBlockedForTurn();
+      if (blockedIds.includes(pt.id)) return;
+
+      // Check if lock is blocked
+      if (pt.id === 'lock1' && lockBlocked) return;
+
+      pendingTouchPoint = pt;
+      touchPopup.style.display = 'flex';
+    }
+
+    // ===== Popup Yes/No =====
+    document.getElementById('touchYes').addEventListener('click', () => {
+      touchPopup.style.display = 'none';
+      if (!pendingTouchPoint) return;
+
+      const pt = pendingTouchPoint;
+      pendingTouchPoint = null;
+
+      // Mark as used (both local and global)
+      usedPoints.add(pt.id);
+      globalUsedPoints.add(pt.id);
+
+      // Notify left.html to activate pin
+      timeChannel.postMessage({
+        action: 'touchActivated',
+        pin: pt.pin,
+        location: pt.label,
+        turn: currentTurn
+      });
+
+      // Advance turn
+      currentTurn++;
+      activatePoints();
+
+      if (currentTurn >= maxTurns) {
+        disableTouchUI();
+        timeChannel.postMessage({ action: 'allTurnsComplete' });
+      } else {
+        showTurnIndicator();
+      }
+    });
+
+    document.getElementById('touchNo').addEventListener('click', () => {
+      touchPopup.style.display = 'none';
+      pendingTouchPoint = null;
+    });
+
+    // ===== Capsule Popup Yes/No =====
+    document.getElementById('capsuleYes').addEventListener('click', () => {
+      capsulePopup.style.display = 'none';
+      if (!pendingCapsule) return;
+      const data = pendingCapsule;
+      pendingCapsule = null;
+
+      // Activate the capsule pin via left
+      timeChannel.postMessage({
+        action: 'touchActivated',
+        pin: data.pin,
+        location: data.capsuleType === 'internal' ? '캡슐 내부' : '캡슐 외부',
+        turn: -1
+      });
+
+      // Mark capsule point as used
+      const capId = data.capsuleType === 'internal' ? 'cap1' : 'cap2';
+      usedPoints.add(capId);
+      globalUsedPoints.add(capId);
+      activatePoints();
+    });
+
+    document.getElementById('capsuleNo').addEventListener('click', () => {
+      capsulePopup.style.display = 'none';
+      pendingCapsule = null;
+    });
+
+    // ===== Sub Touch (Phase 30) =====
+    document.getElementById('subTouchZone').addEventListener('click', () => {
+      subTouchArea.style.display = 'none';
+      timeChannel.postMessage({ action: 'subTouchComplete' });
+    });
+
+    // ===== BroadcastChannel from left =====
+    timeChannel.onmessage = (ev) => {
+      const d = ev.data;
+      console.log('From left:', d);
+
+      if (d.action === 'showMap') {
+        showMap(d.map);
+      }
+
+      if (d.action === 'enableTouch') {
+        enableTouch(d.turnOrder, d.maxTurns, d.persistBlocked);
+      }
+
+      if (d.action === 'disableTouch') {
+        disableTouch();
+      }
+
+      if (d.action === 'waitTouch') {
+        document.getElementById('section1').style.display = 'none';
+        subTouchArea.style.display = 'none';
+        mapContainer.style.display = 'block';
+        mapImg.src = 'image/' + (currentMap || 'map2') + '.png';
+        // Clear existing touch points and show single wait point
+        touchPointsEl.innerHTML = '';
+        const wp = document.createElement('div');
+        wp.style.cssText = 'position:absolute;left:81.5%;top:56%;width:3.5%;aspect-ratio:1;border-radius:50%;z-index:10;transform:translate(-50%,-50%);-webkit-tap-highlight-color:transparent;';
+        wp.addEventListener('click', () => {
+          wp.remove();
+          timeChannel.postMessage({ action: 'subTouchComplete' });
+        });
+        touchPointsEl.appendChild(wp);
+      }
+
+      if (d.action === 'blockLock') {
+        // Pin49 detected: block lock point and mark as used
+        lockBlocked = true;
+        globalUsedPoints.add('lock1');
+        usedPoints.add('lock1');
+        activatePoints();
+      }
+
+      if (d.action === 'showCapsulePopup') {
+        // Show capsule investigation confirmation popup
+        pendingCapsule = { capsuleType: d.capsuleType, pin: d.pin };
+        capsulePopupImg.src = 'image/touch_popup.png';
+        capsulePopup.style.display = 'flex';
+      }
+
+      if (d.action === 'showCredit') {
+        mapContainer.style.display = 'none';
+        subTouchArea.style.display = 'none';
+        document.getElementById('section1').style.display = 'none';
+        const cs = document.getElementById('creditScreen');
+        cs.style.display = 'block';
+        cs.style.opacity = '0';
+        cs.style.transition = 'opacity 2s ease-in';
+        setTimeout(() => { cs.style.opacity = '1'; }, 100);
+
+        const creditLines = [
+          ['기획 및 시뮬레이션', '째리'],
+          ['제작', '판타스트릭'],
+          ['공간 및 장치 설계/제작', '판타스트릭'],
+          ['프로그래밍', '도고'],
+          ['키 비주얼 디자인', '보틀링컴퍼니'],
+          ['단서 디자인', '째리'],
+          ['문제 제작', '째리'],
+          ['모형 제작', '숨숨'],
+          ['영상 제작', '브레너'],
+          ['음향 및 음악', '짝시옹']
+        ];
+
+        const ct = document.getElementById('creditText');
+        ct.innerHTML = '';
+        let lineIdx = 0;
+        let charIdx = 0;
+        let currentPhaseCredit = 'role'; // 'role' then 'name'
+        let roleSpan = null, nameSpan = null;
+
+        function typeChar() {
+          if (lineIdx >= creditLines.length) return;
+          const [role, name] = creditLines[lineIdx];
+
+          if (charIdx === 0 && currentPhaseCredit === 'role') {
+            const row = document.createElement('div');
+            row.style.cssText = 'display:flex;gap:0%;';
+            roleSpan = document.createElement('span');
+            roleSpan.style.cssText = 'flex:1;text-align:left;';
+            nameSpan = document.createElement('span');
+            nameSpan.style.cssText = 'width:40%;text-align:left;';
+            row.appendChild(roleSpan);
+            row.appendChild(nameSpan);
+            ct.appendChild(row);
+          }
+
+          if (currentPhaseCredit === 'role') {
+            roleSpan.textContent += role[charIdx];
+            charIdx++;
+            if (charIdx >= role.length) {
+              charIdx = 0;
+              currentPhaseCredit = 'name';
+              setTimeout(typeChar, 200);
+            } else {
+              setTimeout(typeChar, 50);
+            }
+          } else {
+            nameSpan.textContent += name[charIdx];
+            charIdx++;
+            if (charIdx >= name.length) {
+              lineIdx++;
+              charIdx = 0;
+              currentPhaseCredit = 'role';
+              setTimeout(typeChar, 600);
+            } else {
+              setTimeout(typeChar, 50);
+            }
+          }
+        }
+        setTimeout(typeChar, 2500);
+      }
+
+      if (d.action === 'reload') {
+        setTimeout(() => location.reload(), 1000);
+      }
+    };
+
+    // ===== Pin monitoring (right uses minimal pins) =====
+    const monitoredPins = [];
+    const pinActions_on = {};
+
+    // 핀 상태 업데이트 함수 (test)
+    function updatePinDisplay(pinIdentifier) {
+      if (!isInitialized) return; // 초기화 전에는 신호 무시
+
+      if (pinActions_on[pinIdentifier] && window[pinIdentifier] === true) {
+        pinActions_on[pinIdentifier]();
+      }
+    }
+    setInterval(() => {
+      Object.keys(pinActions_on).forEach(updatePinDisplay);
+    }, 200);
+
+    // 핀 상태 업데이트 함수 (real)
+    // function updatePinDisplay(pinIdentifier) {
+    //   if (window[pinIdentifier] === true) {
+    //     if (pinActions_on[pinIdentifier]) {
+    //       pinActions_on[pinIdentifier]();
+    //     }
+    //   }
+    // }
+
+    // ===== Init =====
+    $('#section0').click(function () {
+      isInitialized = true;
+      document.getElementById('section0').style.display = 'none';
+      document.getElementById('section1').style.display = 'flex';
+      console.log('Right 초기화 완료');
+    });
+
+    // ===== Reset Button =====
+    let resetClicks = 0;
+    $('#resetButton').click(function () {
+      resetClicks++;
+      if (resetClicks >= 10) location.reload();
+    });
+  </script>
+  <script src="../script.js"></script>
+</body>
+
+</html>
