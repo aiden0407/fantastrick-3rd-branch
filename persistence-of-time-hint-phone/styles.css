@@ -1,0 +1,244 @@
+body {
+    background-color: black;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+/* ===== Screen system ===== */
+.screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100dvh;
+    display: none;
+    overflow: hidden;
+}
+
+.screen.active {
+    display: block;
+}
+
+.screen-bg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* ===== Buttons ===== */
+.btn {
+    position: absolute;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    border: none;
+    background: none;
+    padding: 0;
+    outline: none;
+}
+
+.btn img {
+    height: 100%;
+    width: auto;
+    display: block;
+}
+
+.btn-center-bottom {
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 17%;
+    height: 11%;
+}
+
+/* ===== Survey buttons ===== */
+.survey-btns {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+}
+
+.q-btn-group {
+    position: absolute;
+    display: flex;
+    gap: 3%;
+    align-items: center;
+    justify-content: center;
+}
+
+.q-btn-group .btn {
+    position: relative;
+    height: 100%;
+}
+
+/* Q1 yes/no row */
+.q1-btns {
+    top: 22%;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 9%;
+}
+
+/* Per-character Q1 vertical position (question text length differs) */
+#scr-engine_survey .q1-btns {
+    top: 20%;
+}
+
+#scr-bigdeal_survey .q1-btns {
+    top: 14%;
+}
+
+/* Q2 yes/no row */
+.q2-btns {
+    top: 56%;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 9%;
+}
+
+/* Q3 character selection row */
+.q3-btns {
+    top: 81%;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 10%;
+    gap: 2%;
+}
+
+/* Confirm button - bottom right */
+.confirm-btn {
+    position: absolute;
+    bottom: 2%;
+    right: 2%;
+    height: 8%;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    border: none;
+    background: none;
+    padding: 0;
+    outline: none;
+}
+
+.confirm-btn img {
+    height: 100%;
+    width: auto;
+}
+
+/* Selected state */
+.btn.selected {
+    filter: brightness(0.7);
+}
+
+/* ===== Popup ===== */
+#popupOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100dvh;
+    z-index: 100;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.6);
+}
+
+#popupOverlay.active {
+    display: flex;
+}
+
+.popup-box {
+    position: relative;
+    width: 75%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.popup-box .popup-img {
+    width: 100%;
+}
+
+.popup-buttons {
+    position: absolute;
+    bottom: 15%;
+    display: flex;
+    gap: 10%;
+    justify-content: center;
+    width: 100%;
+}
+
+.popup-buttons .btn {
+    position: relative;
+    height: 80px;
+}
+
+/* ===== Hint input ===== */
+.hint-input-wrap {
+    position: absolute;
+    top: 57%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 42%;
+    z-index: 2;
+}
+
+.hint-input-wrap input {
+    width: 100%;
+    padding: 16px 24px;
+    font-size: 140px;
+    text-align: center;
+    background: transparent;
+    border: none;
+    color: white;
+    font-family: monospace;
+    letter-spacing: 4px;
+    outline: none;
+    text-transform: uppercase;
+}
+
+/* ===== Hint display buttons ===== */
+.hint-btns {
+    position: absolute;
+    top: 84%;
+    left: 0;
+    width: 100%;
+    padding: 0 6%;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: space-between;
+    z-index: 2;
+}
+
+.hint-btns .btn {
+    position: relative;
+    width: 29%;
+    height: auto;
+}
+
+.hint-btns .btn img {
+    width: 100%;
+    height: auto;
+}
+
+/* ===== Reset screen ===== */
+#sectionReset {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100dvh;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    background: black;
+    color: white;
+    font-size: 60px;
+    z-index: 200;
+}

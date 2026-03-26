@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>hint-phone</title>
+  <script src="../jquery.min.js" type='text/javascript'></script>
+  <link rel="stylesheet" href="../style.css" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+
+<body>
+  <div id="overlay">연결이 끊겼습니다.</div>
+  <div id="arduinoContainer"></div>
+
+  <div id="section0"
+    style="width:100%;height:100dvh;display:flex;justify-content:center;align-items:center;color:red;font-size:40px;">
+    정상적인 초기화를 위해 화면을 터치해 주세요
+  </div>
+
+  <div id="sectionReset">초기화 중...</div>
+
+  <div id="mainContainer" style="display:none;width:100%;height:100dvh;position:relative;overflow:hidden;background:black;">
+
+    <!-- Ready: 대기 화면 -->
+    <div id="scr-ready" class="screen">
+      <img class="screen-bg" src="image/ready.png" />
+    </div>
+
+    <!-- Start: 안내 화면 -->
+    <div id="scr-start" class="screen">
+      <img class="screen-bg" src="image/start.png" />
+      <button class="btn btn-center-bottom" onclick="playEffect(1); goToScreen('cq_confirm');">
+        <img src="image/next_button.png" data-onclick="image/next_button_onclick.png" data-normal="image/next_button.png" />
+      </button>
+    </div>
+
+    <!-- CQ(시큐) 확인 -->
+    <div id="scr-cq_confirm" class="screen">
+      <img class="screen-bg" src="image/CQ_check.png" />
+      <button class="btn btn-center-bottom" onclick="playEffect(1); goToScreen('cq_survey');">
+        <img src="image/CQ_ok.png" data-onclick="image/CQ_ok_onclick.png" data-normal="image/CQ_ok.png" />
+      </button>
+    </div>
+
+    <!-- CQ(시큐) 설문 -->
+    <div id="scr-cq_survey" class="screen">
+      <img class="screen-bg" src="image/CQ_qna.png" />
+      <div class="survey-btns">
+        <div class="q-btn-group q1-btns">
+          <button class="btn" onclick="selectAnswer('cq', 1, 'yes', this)"><img src="image/yes.png" data-onclick="image/yes_onclick.png" data-normal="image/yes.png" /></button>
+          <button class="btn" onclick="selectAnswer('cq', 1, 'no', this)"><img src="image/no.png" data-onclick="image/no_onclick.png" data-normal="image/no.png" /></button>
+        </div>
+        <div class="q-btn-group q2-btns">
+          <button class="btn" onclick="selectAnswer('cq', 2, 'yes', this)"><img src="image/yes.png" data-onclick="image/yes_onclick.png" data-normal="image/yes.png" /></button>
+          <button class="btn" onclick="selectAnswer('cq', 2, 'no', this)"><img src="image/no.png" data-onclick="image/no_onclick.png" data-normal="image/no.png" /></button>
+        </div>
+        <div class="q-btn-group q3-btns">
+          <button class="btn" onclick="selectAnswer('cq', 3, 'bigdeal', this)"><img src="image/bigdeal.png" data-onclick="image/bigdeal_onclick.png" data-normal="image/bigdeal.png" /></button>
+          <button class="btn" onclick="selectAnswer('cq', 3, 'cq', this)"><img src="image/CQ.png" data-onclick="image/CQ_onclick.png" data-normal="image/CQ.png" /></button>
+          <button class="btn" onclick="selectAnswer('cq', 3, 'engine', this)"><img src="image/engine.png" data-onclick="image/engine_onclick.png" data-normal="image/engine.png" /></button>
+          <button class="btn" onclick="selectAnswer('cq', 3, 'dr_el', this)"><img src="image/Dr_el.png" data-onclick="image/Dr_el_onclick.png" data-normal="image/Dr_el.png" /></button>
+        </div>
+        <button class="confirm-btn" onclick="onConfirmClick('cq')">
+          <img src="image/confirm.png" data-onclick="image/confirm_onclick.png" data-normal="image/confirm.png" />
+        </button>
+      </div>
+    </div>
+
+    <!-- 엔진 확인 -->
+    <div id="scr-engine_confirm" class="screen">
+      <img class="screen-bg" src="image/engine_check.png" />
+      <button class="btn btn-center-bottom" onclick="playEffect(1); goToScreen('engine_survey');">
+        <img src="image/engine_ok.png" data-onclick="image/engine_ok_onclick.png" data-normal="image/engine_ok.png" />
+      </button>
+    </div>
+
+    <!-- 엔진 설문 -->
+    <div id="scr-engine_survey" class="screen">
+      <img class="screen-bg" src="image/engine_qna.png" />
+      <div class="survey-btns">
+        <div class="q-btn-group q1-btns">
+          <button class="btn" onclick="selectAnswer('engine', 1, 'yes', this)"><img src="image/yes.png" data-onclick="image/yes_onclick.png" data-normal="image/yes.png" /></button>
+          <button class="btn" onclick="selectAnswer('engine', 1, 'no', this)"><img src="image/no.png" data-onclick="image/no_onclick.png" data-normal="image/no.png" /></button>
+        </div>
+        <div class="q-btn-group q2-btns">
+          <button class="btn" onclick="selectAnswer('engine', 2, 'yes', this)"><img src="image/yes.png" data-onclick="image/yes_onclick.png" data-normal="image/yes.png" /></button>
+          <button class="btn" onclick="selectAnswer('engine', 2, 'no', this)"><img src="image/no.png" data-onclick="image/no_onclick.png" data-normal="image/no.png" /></button>
+        </div>
+        <div class="q-btn-group q3-btns">
+          <button class="btn" onclick="selectAnswer('engine', 3, 'bigdeal', this)"><img src="image/bigdeal.png" data-onclick="image/bigdeal_onclick.png" data-normal="image/bigdeal.png" /></button>
+          <button class="btn" onclick="selectAnswer('engine', 3, 'cq', this)"><img src="image/CQ.png" data-onclick="image/CQ_onclick.png" data-normal="image/CQ.png" /></button>
+          <button class="btn" onclick="selectAnswer('engine', 3, 'engine', this)"><img src="image/engine.png" data-onclick="image/engine_onclick.png" data-normal="image/engine.png" /></button>
+          <button class="btn" onclick="selectAnswer('engine', 3, 'dr_el', this)"><img src="image/Dr_el.png" data-onclick="image/Dr_el_onclick.png" data-normal="image/Dr_el.png" /></button>
+        </div>
+        <button class="confirm-btn" onclick="onConfirmClick('engine')">
+          <img src="image/confirm.png" data-onclick="image/confirm_onclick.png" data-normal="image/confirm.png" />
+        </button>
+      </div>
+    </div>
+
+    <!-- 빅딜 확인 -->
+    <div id="scr-bigdeal_confirm" class="screen">
+      <img class="screen-bg" src="image/bigdeal_check.png" />
+      <button class="btn btn-center-bottom" onclick="playEffect(1); goToScreen('bigdeal_survey');">
+        <img src="image/bigdeal_ok.png" data-onclick="image/bigdeal_ok_onclick.png" data-normal="image/bigdeal_ok.png" />
+      </button>
+    </div>
+
+    <!-- 빅딜 설문 -->
+    <div id="scr-bigdeal_survey" class="screen">
+      <img class="screen-bg" src="image/bigdeal_qna.png" />
+      <div class="survey-btns">
+        <div class="q-btn-group q1-btns">
+          <button class="btn" onclick="selectAnswer('bigdeal', 1, 'yes', this)"><img src="image/yes.png" data-onclick="image/yes_onclick.png" data-normal="image/yes.png" /></button>
+          <button class="btn" onclick="selectAnswer('bigdeal', 1, 'no', this)"><img src="image/no.png" data-onclick="image/no_onclick.png" data-normal="image/no.png" /></button>
+        </div>
+        <div class="q-btn-group q2-btns">
+          <button class="btn" onclick="selectAnswer('bigdeal', 2, 'yes', this)"><img src="image/yes.png" data-onclick="image/yes_onclick.png" data-normal="image/yes.png" /></button>
+          <button class="btn" onclick="selectAnswer('bigdeal', 2, 'no', this)"><img src="image/no.png" data-onclick="image/no_onclick.png" data-normal="image/no.png" /></button>
+        </div>
+        <div class="q-btn-group q3-btns">
+          <button class="btn" onclick="selectAnswer('bigdeal', 3, 'bigdeal', this)"><img src="image/bigdeal.png" data-onclick="image/bigdeal_onclick.png" data-normal="image/bigdeal.png" /></button>
+          <button class="btn" onclick="selectAnswer('bigdeal', 3, 'cq', this)"><img src="image/CQ.png" data-onclick="image/CQ_onclick.png" data-normal="image/CQ.png" /></button>
+          <button class="btn" onclick="selectAnswer('bigdeal', 3, 'engine', this)"><img src="image/engine.png" data-onclick="image/engine_onclick.png" data-normal="image/engine.png" /></button>
+          <button class="btn" onclick="selectAnswer('bigdeal', 3, 'dr_el', this)"><img src="image/Dr_el.png" data-onclick="image/Dr_el_onclick.png" data-normal="image/Dr_el.png" /></button>
+        </div>
+        <button class="confirm-btn" onclick="onConfirmClick('bigdeal')">
+          <img src="image/confirm.png" data-onclick="image/confirm_onclick.png" data-normal="image/confirm.png" />
+        </button>
+      </div>
+    </div>
+
+    <!-- 힌트 메인 -->
+    <div id="scr-hint_main" class="screen">
+      <img class="screen-bg" src="image/hint_main.png" />
+      <div class="hint-input-wrap">
+        <input type="text" id="hintInput" maxlength="5" placeholder="" autocomplete="off" />
+      </div>
+    </div>
+
+    <!-- 힌트 표시 -->
+    <div id="scr-hint_display" class="screen">
+      <img class="screen-bg" id="hintDisplayImg" />
+      <div class="hint-btns">
+        <button class="btn" onclick="goToScreen('hint_main');"><img src="image/main_button.png" data-onclick="image/main_button_onclick.png" data-normal="image/main_button.png" /></button>
+        <button class="btn" onclick="showHintAnswer();"><img src="image/answer_button.png" data-onclick="image/answer_button_onclick.png" data-normal="image/answer_button.png" /></button>
+      </div>
+    </div>
+
+    <!-- 힌트 정답 -->
+    <div id="scr-hint_answer" class="screen">
+      <img class="screen-bg" id="hintAnswerImg" />
+      <div class="hint-btns">
+        <button class="btn" onclick="goToScreen('hint_main');"><img src="image/main_button.png" data-onclick="image/main_button_onclick.png" data-normal="image/main_button.png" /></button>
+      </div>
+    </div>
+
+    <!-- 확인 팝업 -->
+    <div id="popupOverlay">
+      <div class="popup-box">
+        <img class="popup-img" src="image/choice_popup.png" />
+        <div class="popup-buttons">
+          <button class="btn" onclick="onPopupYes()"><img src="image/yes.png" data-onclick="image/yes_onclick.png" data-normal="image/yes.png" /></button>
+          <button class="btn" onclick="onPopupNo()"><img src="image/no.png" data-onclick="image/no_onclick.png" data-normal="image/no.png" /></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let isInitialized = false;
+    let currentScreen = null;
+    let currentHintCode = null;
+    let pendingConfirmChar = null;
+
+    // ===== Survey Answers =====
+    const surveyAnswers = {
+      cq: { 1: null, 2: null, 3: null },
+      engine: { 1: null, 2: null, 3: null },
+      bigdeal: { 1: null, 2: null, 3: null }
+    };
+
+    // ===== Sound Effects =====
+    const effects = {
+      1: new Audio('sound/effect/effect1.mp3'),
+      2: new Audio('sound/effect/effect2.mp3'),
+      3: new Audio('sound/effect/effect3.mp3')
+    };
+    function playEffect(n) {
+      const a = effects[n];
+      if (a) { a.currentTime = 0; a.play().catch(() => {}); }
+    }
+
+    // ===== Screen Management =====
+    function goToScreen(name) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      const scr = document.getElementById('scr-' + name);
+      if (scr) {
+        scr.classList.add('active');
+        currentScreen = name;
+        console.log('Screen → ' + name);
+
+        // 힌트 메인 전환 시 인풋 초기화 및 포커스
+        if (name === 'hint_main') {
+          const inp = document.getElementById('hintInput');
+          inp.value = '';
+          setTimeout(() => inp.focus(), 100);
+        }
+      }
+    }
+
+    // ===== Button Press Effects =====
+    document.addEventListener('pointerdown', (e) => {
+      const btn = e.target.closest('.btn, .confirm-btn');
+      if (!btn) return;
+      const img = btn.querySelector('img');
+      if (img && img.dataset.onclick) img.src = img.dataset.onclick;
+    });
+    document.addEventListener('pointerup', () => {
+      document.querySelectorAll('.btn img, .confirm-btn img').forEach(img => {
+        const btn = img.closest('.btn, .confirm-btn');
+        if (btn && btn.classList.contains('selected')) return;
+        if (img.dataset.normal) img.src = img.dataset.normal;
+      });
+    });
+    document.addEventListener('pointercancel', () => {
+      document.querySelectorAll('.btn img, .confirm-btn img').forEach(img => {
+        const btn = img.closest('.btn, .confirm-btn');
+        if (btn && btn.classList.contains('selected')) return;
+        if (img.dataset.normal) img.src = img.dataset.normal;
+      });
+    });
+
+    // ===== Survey Logic =====
+    function selectAnswer(character, question, value, btnEl) {
+      playEffect(2);
+      surveyAnswers[character][question] = value;
+
+      // 같은 그룹 내 선택 해제
+      const group = btnEl.closest('.q-btn-group');
+      group.querySelectorAll('.btn').forEach(b => {
+        b.classList.remove('selected');
+        const img = b.querySelector('img');
+        if (img && img.dataset.normal) img.src = img.dataset.normal;
+      });
+
+      // 현재 버튼 선택 표시
+      btnEl.classList.add('selected');
+      const img = btnEl.querySelector('img');
+      if (img && img.dataset.onclick) img.src = img.dataset.onclick;
+    }
+
+    function onConfirmClick(character) {
+      playEffect(3);
+      pendingConfirmChar = character;
+      document.getElementById('popupOverlay').classList.add('active');
+    }
+
+    function onPopupYes() {
+      playEffect(1);
+      document.getElementById('popupOverlay').classList.remove('active');
+
+      const char = pendingConfirmChar;
+      pendingConfirmChar = null;
+
+      if (char === 'cq') {
+        goToScreen('engine_confirm');
+      } else if (char === 'engine') {
+        goToScreen('bigdeal_confirm');
+      } else if (char === 'bigdeal') {
+        activateSurveyPins();
+        goToScreen('hint_main');
+      }
+    }
+
+    function onPopupNo() {
+      playEffect(3);
+      document.getElementById('popupOverlay').classList.remove('active');
+      pendingConfirmChar = null;
+    }
+
+    // ===== Pin Output Mapping =====
+    // 정답 = dr_el (엘박사가 범인)
+    // 각 캐릭터별 3개 핀 중 하나 활성화:
+    //   Q3=정답 → middle pin (all-all-정답)
+    //   Q1=no → first pin (X-)
+    //   Q1=yes AND Q3=오답 → last pin (O-오답)
+    function activateSurveyPins() {
+      const CORRECT_KILLER = 'dr_el';
+      const pinMap = {
+        bigdeal: { first: 22, middle: 24, last: 26 },
+        cq: { first: 28, middle: 30, last: 32 },
+        engine: { first: 34, middle: 36, last: 38 }
+      };
+
+      ['bigdeal', 'cq', 'engine'].forEach(char => {
+        const ans = surveyAnswers[char];
+        const pins = pinMap[char];
+        let pin;
+
+        if (ans[3] === CORRECT_KILLER) {
+          pin = pins.middle; // 정답
+        } else if (ans[1] === 'no') {
+          pin = pins.first; // X
+        } else {
+          pin = pins.last; // O + 오답
+        }
+
+        triggerPinOn('thint-1_pin_' + pin);
+        console.log(char + ' → thint-1_pin_' + pin);
+      });
+    }
+
+    // ===== Hint Code System =====
+    const VALID_CODES = ['TP001', 'TP002', 'TP003', 'TP004', 'TP005', 'TP006'];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const inp = document.getElementById('hintInput');
+      inp.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          const code = inp.value.trim().toUpperCase();
+          if (VALID_CODES.includes(code)) {
+            currentHintCode = code;
+            document.getElementById('hintDisplayImg').src = 'image/' + code + '.png';
+            document.getElementById('hintAnswerImg').src = 'image/' + code + '_answer.png';
+            goToScreen('hint_display');
+          }
+        }
+      });
+    });
+
+    function showHintAnswer() {
+      if (currentHintCode) {
+        goToScreen('hint_answer');
+      }
+    }
+
+    // ===== Reset =====
+    function resetAll() {
+      console.log('RESET triggered');
+      // 화면 리셋 표시
+      document.getElementById('mainContainer').style.display = 'none';
+      document.getElementById('sectionReset').style.display = 'flex';
+
+      // 모든 write 핀 끄기
+      const writePins = [22, 24, 26, 28, 30, 32, 34, 36, 38];
+      let idx = 0;
+      const iv = setInterval(() => {
+        for (let j = 0; j < 3 && idx < writePins.length; j++, idx++) {
+          triggerPinOff('thint-1_pin_' + writePins[idx]);
+        }
+        if (idx >= writePins.length) {
+          clearInterval(iv);
+          setTimeout(() => location.reload(), 1000);
+        }
+      }, 500);
+    }
+
+    // ===== READ PIN STATES =====
+    const monitoredPins = [];
+    for (let i = 22; i <= 50; i++) monitoredPins.push('thint-1_pin_' + i);
+
+    // ===== PIN ACTIONS =====
+    const pinActions_on = {
+      'thint-1_pin_23': () => {
+        // 시작 신호 → ready에서 start로 전환
+        if (currentScreen === 'ready') {
+          goToScreen('start');
+        }
+      },
+      'thint-1_pin_25': () => {
+        // 리셋 신호
+        resetAll();
+      },
+    };
+    // 나머지 핀 빈 핸들러
+    for (let i = 22; i <= 50; i++) {
+      const key = 'thint-1_pin_' + i;
+      if (!pinActions_on[key]) pinActions_on[key] = () => {};
+    }
+
+    // 핀 상태 업데이트 함수
+    function updatePinDisplay(pinIdentifier) {
+      if (!isInitialized) return;
+      if (pinActions_on[pinIdentifier] && window[pinIdentifier] === true) {
+        pinActions_on[pinIdentifier]();
+      }
+    }
+    setInterval(() => {
+      Object.keys(pinActions_on).forEach(updatePinDisplay);
+    }, 200);
+
+    // 핀 상태 업데이트 함수 (real)
+    // function updatePinDisplay(pinIdentifier) {
+    //   if (window[pinIdentifier] === true) {
+    //     if (pinActions_on[pinIdentifier]) {
+    //       pinActions_on[pinIdentifier]();
+    //     }
+    //   }
+    // }
+
+    // ===== Survey 상태 초기화 =====
+    function resetSurveyAnswers() {
+      ['cq', 'engine', 'bigdeal'].forEach(char => {
+        surveyAnswers[char] = { 1: null, 2: null, 3: null };
+      });
+      document.querySelectorAll('.btn.selected').forEach(b => {
+        b.classList.remove('selected');
+        const img = b.querySelector('img');
+        if (img && img.dataset.normal) img.src = img.dataset.normal;
+      });
+    }
+
+    // ===== Init =====
+    $('#section0').click(function () {
+      isInitialized = true;
+      document.getElementById('section0').style.display = 'none';
+      document.getElementById('mainContainer').style.display = 'block';
+      goToScreen('ready');
+    });
+  </script>
+  <script src="../script.js"></script>
+</body>
+
+</html>

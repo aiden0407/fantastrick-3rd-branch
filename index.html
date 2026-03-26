@@ -216,6 +216,13 @@
         <div class="pin-toggle">Pin 50 캡슐조사2(외부): <button id="t50">OFF</button></div>
     </section>
 
+    <!-- thint 힌트폰 -->
+    <section>
+        <h2>힌트폰 (thint) Read 핀</h2>
+        <div class="pin-toggle">Pin 23 시작: <button id="th23">OFF</button></div>
+        <div class="pin-toggle">Pin 25 리셋: <button id="th25">OFF</button></div>
+    </section>
+
     <!-- GUN dlc2 -->
     <section>
         <h2>dlc2 (GUNmega-2) 핀</h2>
@@ -252,8 +259,9 @@
         <a href="./dlc/left.html" target="_blank">전파상 DLC(L) + 로직</a>
         <a href="./dlc/right.html" target="_blank">전파상 DLC(R) + 로직</a>
         <a href="./dlc2/" target="_blank">사격 DLC2 GUN</a>
-        <a href="./persistenceOfTime/left.html" target="_blank">시간의 영속성(L) + 로직</a>
-        <a href="./persistenceOfTime/right.html" target="_blank">시간의 영속성(R) + 로직</a>
+        <a href="./persistence-of-time/left.html" target="_blank">시간의 영속성(L) + 로직</a>
+        <a href="./persistence-of-time/right.html" target="_blank">시간의 영속성(R) + 로직</a>
+        <a href="./persistence-of-time-hint-phone/" target="_blank">시간의 영속성 힌트폰</a>
     </div>
 
     <script>
@@ -268,6 +276,7 @@
         const stateDoctor = { 22: 'off', 23: 'off', 24: 'off', 25: 'off' };
         const stateGun = { 22: 'off', 23: 'off', 24: 'off', 25: 'off', 26: 'off', 27: 'off', 28: 'off', 29: 'off', 30: 'off', 31: 'off', 32: 'off', 33: 'off', 34: 'off', 35: 'off' };
         const stateTime = { 22: 'off', 23: 'off', 24: 'off', 25: 'off', 26: 'off', 27: 'off', 28: 'off', 29: 'off', 30: 'off', 31: 'off', 32: 'off', 33: 'off', 34: 'off', 35: 'off', 36: 'off', 37: 'off', 38: 'off', 39: 'off', 40: 'off', 41: 'off', 42: 'off', 43: 'off', 44: 'off', 45: 'off', 46: 'off', 47: 'off', 48: 'off', 49: 'off', 50: 'off' };
+        const stateTimeHint = { 23: 'off', 25: 'off' };
         // const logEl = document.getElementById('log');
 
         // function log(txt) {
@@ -308,6 +317,9 @@
             const pinsT = Object.entries(stateTime).map(([pin, st]) => ({
                 pin: Number(pin), mode: 'read', state: st
             }));
+            const pinsTh = Object.entries(stateTimeHint).map(([pin, st]) => ({
+                pin: Number(pin), mode: 'read', state: st
+            }));
 
             const msg = {
                 type: 'slaveUpdate',
@@ -321,7 +333,8 @@
                     { arduinoID: 'streetmega-2', pins: pinsSt },
                     { arduinoID: 'doctormega-1', pins: pinsDt },
                     { arduinoID: 'GUNmega-2', pins: pinsG },
-                    { arduinoID: 'time-2', pins: pinsT }
+                    { arduinoID: 'time-2', pins: pinsT },
+                    { arduinoID: 'thint-1', pins: pinsTh }
                 ]
             };
             channel.postMessage(msg);
@@ -348,6 +361,7 @@
         bindButtons('st', stateStreet, [22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42]);
         bindButtons('dt', stateDoctor, [22, 23, 24, 25]);
         bindButtons('g', stateGun, [22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35]);
+        bindButtons('th', stateTimeHint, [23, 25]);
         bindButtons('t', stateTime, [22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50]);
 
         // Front 로부터 오는 제어 메시지 로깅
